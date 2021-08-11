@@ -20,6 +20,6 @@ export function withSSRGuest<P>(fn: GetServerSideProps<P>): GetServerSideProps {
       };
     }
 
-    return await fn(ctx);
+    return fn(ctx);
   };
 }

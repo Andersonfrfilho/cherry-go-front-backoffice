@@ -35,9 +35,11 @@
   ],
   "rules": {
     "no-useless-return": "off",
+    "react/style-prop-object": "off",
     "no-var-requires": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "no-empty-function": "off",
+    "@typescript-eslint/no-empty-function": ["off"],
     "no-nested-ternary":"off",
     "import/no-extraneous-dependencies":"off",
     "consistent-return":"off",

@@ -3,6 +3,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useContext, useState } from 'react';
+import { RiRotateLockLine, RiUserAddLine } from 'react-icons/ri';
 import { Input } from '../components/Form/Input';
 import { AuthContext } from '../contexts/AuthContext';
 import { withSSRGuest } from '../utils/withSSRGuest';
@@ -11,6 +12,7 @@ type SignInFormData = {
   email: string;
   password: string;
 };
+
 type SignErrorData = {
   status_code: number;
   message: string;
@@ -42,7 +44,7 @@ export default function SignIn() {
       password,
     };
     try {
-      const response = await signIn(data);
+      await signIn(data);
     } catch (error) {
       setAppError(error);
     }
@@ -98,6 +100,30 @@ export default function SignIn() {
         >
           Entrar
         </Button>
+        <Flex marginTop="3" flexDirection="row" justifyContent="space-between">
+          <Button
+            marginRight="2"
+            flex="1"
+            size="lg"
+            colorScheme="pink"
+            aria-label="Search database"
+            leftIcon={<RiUserAddLine />}
+            onClick={() => {}}
+          >
+            Cadastrar
+          </Button>
+          <Button
+            marginLeft="2"
+            flex="1"
+            size="lg"
+            colorScheme="pink"
+            aria-label="Search database"
+            leftIcon={<RiRotateLockLine />}
+            onClick={() => {}}
+          >
+            Senha
+          </Button>
+        </Flex>
       </Flex>
     </Flex>
   );
