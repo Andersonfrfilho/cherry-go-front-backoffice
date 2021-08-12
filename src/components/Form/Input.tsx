@@ -26,6 +26,7 @@ interface InputProps extends ChakraInputProps {
   error?: FieldError;
   button?: boolean;
   buttonProps?: ButtonProps;
+  mask?: string;
 }
 
 const InputBase: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
@@ -53,6 +54,7 @@ const InputBase: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
           <InputRightElement height="100%" paddingRight="3">
             {buttonProps.icon ? (
               <IconButton
+                type="button"
                 aria-label={buttonProps.title}
                 icon={<Icon as={buttonProps.icon} />}
                 fontSize="24"

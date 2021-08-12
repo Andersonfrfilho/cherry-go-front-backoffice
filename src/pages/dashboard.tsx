@@ -6,7 +6,7 @@ import { useContext, useEffect } from 'react';
 import { Can } from '../components/Can';
 import { Header } from '../components/Header';
 import { Sidebar } from '../components/Sidebar';
-import { AuthContext } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/Auth.context';
 import { setupAPIClient } from '../services/api';
 import { api } from '../services/apiClient';
 import { useCan } from '../services/hooks/useCan';
@@ -52,7 +52,7 @@ const options: ApexOptions = {
 const series = [{ name: 'series1', data: [57, 36, 13, 29, 6, 19] }];
 
 export default function Dashboard() {
-  const { user, isAuthenticated, signOut } = useContext(AuthContext);
+  const { user, isAuthenticated, signOut } = useAuth();
 
   useEffect(() => {
     const { 'nextauth.token': token } = parseCookies();

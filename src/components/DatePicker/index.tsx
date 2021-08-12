@@ -1,12 +1,18 @@
-import DayPicker from 'react-day-picker';
+import DayPicker, { Modifier } from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
 import { useState } from 'react';
 import MomentLocaleUtils from 'react-day-picker/moment';
 import 'moment/locale/pt-br';
+import { MINIMUM_AGE } from './minDate.const';
+
+interface DatePickerProps {
+  day: Modifier;
+  setDay: (day: string) => void;
+}
 
 const currentYear = new Date().getFullYear();
 const fromMonth = new Date(currentYear, 0);
-const toMonth = new Date(currentYear + 10, 11);
+const toMonth = new Date(currentYear - 70, 71);
 const MONTHS = [
   'Janeiro',
   'Fevereiro',
@@ -28,7 +34,12 @@ function YearMonthForm({ date, localeUtils, onChange, handleOnBlur }) {
   const months = localeUtils.getMonths();
 
   const years = [];
-  for (let i = fromMonth.getFullYear(); i <= toMonth.getFullYear(); i += 1) {
+
+  for (
+    let i = toMonth.getFullYear();
+    i <= fromMonth.getFullYear() - MINIMUM_AGE;
+    i += 1
+  ) {
     years.push(i);
   }
 
@@ -69,9 +80,8 @@ function YearMonthForm({ date, localeUtils, onChange, handleOnBlur }) {
   );
 }
 
-export function DatePicker(props) {
+export function DatePicker({ day, setDay }: DatePickerProps) {
   const [month, setMonth] = useState(new Date());
-  const [day, setDay] = useState(null);
   function setDaySelect(dayParam) {
     setDay(dayParam);
   }

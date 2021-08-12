@@ -4,26 +4,28 @@ import { ReactQueryDevtools } from 'react-query/devtools';
 import { QueryClientProvider } from 'react-query';
 import { theme } from '../styles/theme';
 import { SidebarDrawerProvider } from '../contexts/SidebarDrawerContext';
-import { makeServer } from '../services/mirage';
 import { queryClient } from '../services/queryClient';
-import { AuthProvider } from '../contexts/AuthContext';
+import { UsersInsidesProvider } from '../contexts/UsersInsides.context';
+import { AuthProvider } from '../contexts/Auth.context';
 
-if (process.env.NODE_ENV === 'development') {
-  makeServer();
-}
+// if (process.env.NODE_ENV === 'development') {
+//   makeServer();
+// }
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-        <ChakraProvider theme={theme}>
-          <SidebarDrawerProvider>
-            <Component {...pageProps} />
-          </SidebarDrawerProvider>
-        </ChakraProvider>
-        <ReactQueryDevtools />
-      </QueryClientProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <ChakraProvider theme={theme}>
+        <AuthProvider>
+          <UsersInsidesProvider>
+            <SidebarDrawerProvider>
+              <Component {...pageProps} />
+            </SidebarDrawerProvider>
+          </UsersInsidesProvider>
+        </AuthProvider>
+      </ChakraProvider>
+      <ReactQueryDevtools />
+    </QueryClientProvider>
   );
 }
 

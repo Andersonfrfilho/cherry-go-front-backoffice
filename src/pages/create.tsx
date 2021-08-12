@@ -13,23 +13,38 @@ import {
 } from '@chakra-ui/react';
 import InputMask from 'react-input-mask';
 import Link from 'next/link';
-import { useMutation } from 'react-query';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'next/router';
 import { RiCalendarEventFill } from 'react-icons/ri';
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Input } from '../components/Form/Input';
 import { DatePicker } from '../components/DatePicker';
-import { api } from '../services/apiClient';
+import { useUsersInsides } from '../contexts/UsersInsides.context';
+import { ErrorData } from '../errors/Error.type';
+import { validaCpf } from '../utils/validate';
 
 type CreateUserFormData = {
   name: string;
+  last_name: string;
   email: string;
+  cpf: string;
+  rg: string;
+  phone: string;
+  gender: string;
+  birth_date: string;
   password: string;
   password_confirmation: string;
 };
+
+yup.addMethod(yup.string, 'cpfValidation', function (errorMessage) {
+  return this.test(`test-card-type`, errorMessage, function (value) {
+    const { path, createError } = this;
+
+    return validaCpf(value) || createError({ path, message: errorMessage });
+  });
+});
 
 const createUserFormSchema = yup.object().shape({
   name: yup.string().required('Nome obrigatória'),
@@ -37,9 +52,20 @@ const createUserFormSchema = yup.object().shape({
   email: yup.string().required('E-mail obrigatório').email('E-mail inválido'),
   cpf: yup
     .string()
-    .length(11, 'Digite um cpf valido')
-    .required('E-mail obrigatório')
-    .email('E-mail inválido'),
+    .cpfValidation('cpf validation')
+    .length(14, 'Digite um cpf valido')
+    .required('CPF obrigatório'),
+  rg: yup
+    .string()
+    .min(11, 'Digite um rg valido')
+    .max(12, 'Digite um rg valido')
+    .required('CPF obrigatório'),
+  phone: yup
+    .string()
+    .length(20, 'Digite um celular valido')
+    .required('Celular obrigatório'),
+  gender: yup.string().required('Gênero obrigatório'),
+  birth_date: yup.string().required('Data de nascimento obrigatória'),
   password: yup
     .string()
     .required('Senha obrigatória')
@@ -49,42 +75,67 @@ const createUserFormSchema = yup.object().shape({
     .oneOf([null, yup.ref('password')], 'As senhas precisam ser iguais')
     .required('Senha obrigatória'),
 });
-type selectBirthDateParamsType = {
-  value: any;
-};
-export default function CreateUser() {
-  const [visibleCalendar, setVisibleCalendar] = useState(false);
-  const [date, setDate] = useState(new Date());
 
-  function selectBirthDate({ value }: selectBirthDateParamsType) {
-    setVisibleCalendar(false);
-    console.log(value);
-  }
-  // const { signIn } = useContext(AuthContext);
-  const router = useRouter();
-  const createUser = useMutation(
-    async (user: CreateUserFormData) => {
-      const response = await api.post('users', {
-        user: {
-          ...user,
-          created_at: new Date(),
-        },
+export default function CreateUser() {
+  const { createUserInsides } = useUsersInsides();
+  console.log(createUserInsides);
+  const [appError, setAppError] = useState<Partial<ErrorData>>({});
+  const [visibleCalendar, setVisibleCalendar] = useState(false);
+  const [day, setDay] = useState(null);
+  const [dayFormatted, setDayFormatted] = useState(null);
+
+  useEffect(() => {
+    if (day) {
+      const date = new Date(day).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
       });
-      return response.data.user;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries('users');
-      },
+      setDayFormatted(date);
     }
-  );
+  }, [day]);
+
+  const router = useRouter();
   const { register, handleSubmit, formState } = useForm({
     resolver: yupResolver(createUserFormSchema),
   });
 
-  const handleCreateUser: SubmitHandler<CreateUserFormData> = async values => {
-    await createUser.mutateAsync(values);
-    router.push('/users');
+  const handleCreateUser: SubmitHandler<CreateUserFormData> = async (
+    values,
+    event
+  ) => {
+    const {
+      cpf,
+      birth_date,
+      gender,
+      last_name,
+      name,
+      rg,
+      email,
+      password,
+      password_confirmation,
+      phone,
+    } = values;
+    setAppError({});
+    event.preventDefault();
+    try {
+      const data: CreateUserFormData = {
+        cpf,
+        birth_date,
+        gender,
+        last_name,
+        name,
+        rg,
+        email,
+        password,
+        password_confirmation,
+        phone,
+      };
+      console.log(createUserInsides);
+      await createUserInsides(data);
+    } catch (error) {
+      setAppError(error);
+    }
   };
 
   const { errors } = formState;
@@ -136,7 +187,6 @@ export default function CreateUser() {
               <Input
                 as={InputMask}
                 mask="***.***.***-**"
-                maskChar={null}
                 name="cpf"
                 type="cpf"
                 label="CPF"
@@ -169,10 +219,10 @@ export default function CreateUser() {
                 <Select
                   size="lg"
                   label="Gênero:"
-                  name="gênero"
-                  border="0"
+                  name="gender"
                   focusBorderColor="pink.500"
                   backgroundColor="gray.900"
+                  {...register('gender')}
                 >
                   <option
                     style={{ color: 'withe', backgroundColor: '#181B23' }}
@@ -198,10 +248,12 @@ export default function CreateUser() {
             <SimpleGrid minChildWidth="240px" spacing={['6', '8']} width="100%">
               <Stack>
                 <Input
-                  name="date_birth"
+                  as={InputMask}
+                  name="birth_date"
                   label="Data de nascimento"
-                  {...register('date_birth')}
-                  error={errors.date_birth}
+                  {...register('birth_date')}
+                  error={errors.birth_date}
+                  mask="**/**/****"
                   button
                   buttonProps={{
                     onClick: () => setVisibleCalendar(!visibleCalendar),
@@ -210,12 +262,7 @@ export default function CreateUser() {
                     icon: () => <RiCalendarEventFill />,
                   }}
                 />
-                {visibleCalendar && (
-                  <DatePicker
-                    onChange={value => selectBirthDate(value)}
-                    selectedDate={date}
-                  />
-                )}
+                {visibleCalendar && <DatePicker day={day} setDay={setDay} />}
               </Stack>
               <Input
                 name="password"
@@ -235,7 +282,7 @@ export default function CreateUser() {
           </VStack>
           <Flex marginTop="8" justify="flex-end">
             <HStack spacing="4">
-              <Link href="/users" passHref>
+              <Link href="/" passHref>
                 <Button as="a" colorScheme="whiteAlpha">
                   Cancelar
                 </Button>

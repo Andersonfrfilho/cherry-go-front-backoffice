@@ -2,21 +2,16 @@ import { Button, Flex, Image, Stack, Text } from '@chakra-ui/react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { RiRotateLockLine, RiUserAddLine } from 'react-icons/ri';
 import { Input } from '../components/Form/Input';
-import { AuthContext } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/Auth.context';
 import { withSSRGuest } from '../utils/withSSRGuest';
+import { ErrorData } from '../errors/Error.type';
 
 type SignInFormData = {
   email: string;
   password: string;
-};
-
-type SignErrorData = {
-  status_code: number;
-  message: string;
-  code?: string;
 };
 
 const signInFormSchema = yup.object().shape({
@@ -25,9 +20,9 @@ const signInFormSchema = yup.object().shape({
 });
 
 export default function SignIn() {
-  const [appError, setAppError] = useState<Partial<SignErrorData>>({});
+  const [appError, setAppError] = useState<Partial<ErrorData>>({});
 
-  const { signIn } = useContext(AuthContext);
+  const { signIn } = useAuth();
 
   const { register, handleSubmit, formState } = useForm({
     resolver: yupResolver(signInFormSchema),

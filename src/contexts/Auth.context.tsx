@@ -1,6 +1,12 @@
 import Router from 'next/router';
 import { setCookie, parseCookies, destroyCookie } from 'nookies';
-import { createContext, ReactNode, useEffect, useState } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { BroadcastChannel } from 'broadcast-channel';
 import { AppError } from '../errors/AppError';
 import { api } from '../services/apiClient';
@@ -112,3 +118,5 @@ export function AuthProvider({ children }: AuthProviderProps) {
     </AuthContext.Provider>
   );
 }
+
+export const useAuth = () => useContext(AuthContext);
