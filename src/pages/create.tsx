@@ -1,3 +1,4 @@
+import Router from 'next/router';
 import {
   Box,
   Button,
@@ -16,14 +17,15 @@ import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useRouter } from 'next/router';
 import { RiCalendarEventFill } from 'react-icons/ri';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+
 import { Input } from '../components/Form/Input';
 import { DatePicker } from '../components/DatePicker';
 import { useUsersInsides } from '../contexts/UsersInsides.context';
 import { ErrorData } from '../errors/Error.type';
-import { validaCpf } from '../utils/validate';
+import { validaCpf, verifyAge } from '../utils/validate';
+import { appVerifyError } from '../errors/appVerify';
 
 type CreateUserFormData = {
   name: string;
@@ -35,14 +37,22 @@ type CreateUserFormData = {
   gender: string;
   birth_date: string;
   password: string;
-  password_confirmation: string;
+  password_confirm: string;
 };
 
 yup.addMethod(yup.string, 'cpfValidation', function (errorMessage) {
-  return this.test(`test-card-type`, errorMessage, function (value) {
+  return this.test('test-cpf-validation', errorMessage, function (value) {
     const { path, createError } = this;
 
     return validaCpf(value) || createError({ path, message: errorMessage });
+  });
+});
+
+yup.addMethod(yup.string, 'ageValidation', function (errorMessage) {
+  return this.test('test-age-validation', errorMessage, function (value) {
+    const { path, createError } = this;
+
+    return verifyAge(value) || createError({ path, message: errorMessage });
   });
 });
 
@@ -60,17 +70,16 @@ const createUserFormSchema = yup.object().shape({
     .min(11, 'Digite um rg valido')
     .max(12, 'Digite um rg valido')
     .required('CPF obrigatório'),
-  phone: yup
-    .string()
-    .length(20, 'Digite um celular valido')
-    .required('Celular obrigatório'),
   gender: yup.string().required('Gênero obrigatório'),
-  birth_date: yup.string().required('Data de nascimento obrigatória'),
+  birth_date: yup
+    .string()
+    .ageValidation('Sua idade não é permitida')
+    .required('Data de nascimento obrigatória'),
   password: yup
     .string()
     .required('Senha obrigatória')
     .min(6, 'No minimo 6 caracteres'),
-  password_confirmation: yup
+  password_confirm: yup
     .string()
     .oneOf([null, yup.ref('password')], 'As senhas precisam ser iguais')
     .required('Senha obrigatória'),
@@ -78,11 +87,13 @@ const createUserFormSchema = yup.object().shape({
 
 export default function CreateUser() {
   const { createUserInsides } = useUsersInsides();
-  console.log(createUserInsides);
+
   const [appError, setAppError] = useState<Partial<ErrorData>>({});
   const [visibleCalendar, setVisibleCalendar] = useState(false);
   const [day, setDay] = useState(null);
-  const [dayFormatted, setDayFormatted] = useState(null);
+  const { register, handleSubmit, formState, setValue } = useForm({
+    resolver: yupResolver(createUserFormSchema),
+  });
 
   useEffect(() => {
     if (day) {
@@ -91,19 +102,18 @@ export default function CreateUser() {
         month: '2-digit',
         year: 'numeric',
       });
-      setDayFormatted(date);
+      setValue('birth_date', date, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
     }
   }, [day]);
-
-  const router = useRouter();
-  const { register, handleSubmit, formState } = useForm({
-    resolver: yupResolver(createUserFormSchema),
-  });
 
   const handleCreateUser: SubmitHandler<CreateUserFormData> = async (
     values,
     event
   ) => {
+    event.preventDefault();
     const {
       cpf,
       birth_date,
@@ -113,11 +123,10 @@ export default function CreateUser() {
       rg,
       email,
       password,
-      password_confirmation,
+      password_confirm,
       phone,
     } = values;
     setAppError({});
-    event.preventDefault();
     try {
       const data: CreateUserFormData = {
         cpf,
@@ -128,13 +137,14 @@ export default function CreateUser() {
         rg,
         email,
         password,
-        password_confirmation,
+        password_confirm,
         phone,
       };
-      console.log(createUserInsides);
+
       await createUserInsides(data);
+      Router.push('/');
     } catch (error) {
-      setAppError(error);
+      setAppError(appVerifyError(error));
     }
   };
 
@@ -162,6 +172,7 @@ export default function CreateUser() {
           </Heading>
           <Divider marginY="6" borderColor="gray.700" />
           <VStack spacing="8">
+            {!!appError && <Text color="red">{appError.message}</Text>}
             <SimpleGrid minChildWidth="240px" spacing={['6', '8']} width="100%">
               <Input
                 name="name"
@@ -204,7 +215,7 @@ export default function CreateUser() {
               />
             </SimpleGrid>
             <SimpleGrid minChildWidth="240px" spacing={['6', '8']} width="100%">
-              <Input
+              {/* <Input
                 as={InputMask}
                 mask="+55 (**) * ****-****"
                 name="phone"
@@ -212,7 +223,7 @@ export default function CreateUser() {
                 label="Celular:"
                 {...register('phone')}
                 error={errors.phone}
-              />
+              /> */}
 
               <Stack>
                 <Text>Gênero</Text>
@@ -226,13 +237,13 @@ export default function CreateUser() {
                 >
                   <option
                     style={{ color: 'withe', backgroundColor: '#181B23' }}
-                    value="fem"
+                    value="female"
                   >
                     Feminino
                   </option>
                   <option
                     style={{ color: 'withe', backgroundColor: '#181B23' }}
-                    value="masc"
+                    value="male"
                   >
                     Masculino
                   </option>
@@ -272,11 +283,11 @@ export default function CreateUser() {
                 error={errors.password}
               />
               <Input
-                name="password_confirmation"
+                name="password_confirm"
                 type="password"
                 label="Confirme a senha"
-                {...register('password_confirmation')}
-                error={errors.password_confirmation}
+                {...register('password_confirm')}
+                error={errors.password_confirm}
               />
             </SimpleGrid>
           </VStack>
@@ -292,7 +303,7 @@ export default function CreateUser() {
                 isLoading={formState.isSubmitting}
                 colorScheme="pink"
               >
-                Salvar
+                Avançar
               </Button>
             </HStack>
           </Flex>

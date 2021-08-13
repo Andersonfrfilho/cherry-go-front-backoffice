@@ -85,6 +85,12 @@ export function DatePicker({ day, setDay }: DatePickerProps) {
   function setDaySelect(dayParam) {
     setDay(dayParam);
   }
+  const modifiersStyles = {
+    day_today: {
+      color: 'white',
+      backgroundColor: '#ffc107',
+    },
+  };
   return (
     <div className="YearNavigation">
       <DayPicker

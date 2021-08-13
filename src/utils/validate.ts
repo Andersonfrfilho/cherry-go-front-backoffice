@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 export function validaCpf(strCPF: string) {
   let cpf = '';
   if (!strCPF) {
@@ -32,4 +34,24 @@ export function validaCpf(strCPF: string) {
   if (resto === 10 || resto === 11) resto = 0;
   if (resto !== parseInt(cpf.substring(10, 11), 10)) return false;
   return true;
+}
+
+export function verifyAge(date_birth: string) {
+  const [day, month, year] = date_birth.split('/');
+
+  return (
+    moment(new Date()).diff(
+      moment(new Date(`${year}-${month}-${day}`)),
+      'years'
+    ) > 18
+  );
+}
+
+export function removeCharacterSpecial(value: string): string {
+  return value.replace(/[^a-zA-Z0-9 ]/g, '');
+}
+
+export function formattedDate(date: string): Date {
+  const [day, month, year] = date.split('/');
+  return new Date(`${year}-${month}-${day}`);
 }

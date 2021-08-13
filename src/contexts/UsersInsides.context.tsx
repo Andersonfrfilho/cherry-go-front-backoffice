@@ -2,6 +2,7 @@ import Router from 'next/router';
 import { createContext, ReactNode, useContext } from 'react';
 import { AppError } from '../errors/AppError';
 import { api } from '../services/apiClient';
+import { formattedDate, removeCharacterSpecial } from '../utils/validate';
 
 type CreateUserInsidesServiceDTO = {
   name: string;
@@ -14,6 +15,7 @@ type CreateUserInsidesServiceDTO = {
   gender: string;
   details?: any;
   active?: boolean;
+  password_confirm: string;
 };
 
 type UsersInsidesContextData = {
@@ -37,36 +39,33 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
     name,
     rg,
     details,
+    password_confirm,
   }: CreateUserInsidesServiceDTO) {
-    console.log('######chegando##########');
-    console.log({
-      email,
-      password,
-      birth_date,
-      cpf,
-      gender,
-      last_name,
-      name,
-      rg,
-      details,
-    });
     try {
-      // await api.post('/v1/users/clients', {
-      //   email,
-      //   password,
-      //   birth_date,
-      //   cpf,
-      //   gender,
-      //   last_name,
-      //   name,
-      //   rg,
-      //   details,
-      // });
-      // Router.push('/');
+      const {
+        data: { id },
+      } = await api.post('/v1/users/clients', {
+        email,
+        password,
+        password_confirm,
+        birth_date: formattedDate(birth_date),
+        cpf: removeCharacterSpecial(cpf),
+        gender,
+        last_name,
+        name,
+        rg: removeCharacterSpecial(rg),
+        details,
+      });
+
+      await api.patch('/v1/users/insides', {
+        id,
+      });
+      Router.push('/register/phone');
     } catch (err) {
       throw new AppError({
         message: err.response.data.message,
         status_code: err.response.status,
+        code: err.response.data.code,
       });
     }
   }
