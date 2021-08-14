@@ -5,6 +5,7 @@ import { AppError } from '../errors/AppError';
 
 let isRefreshing = false;
 let failedRequestQueue = [];
+export const ssrApiClient = axios.create({ baseURL: 'http://localhost:3333' });
 
 export function setupAPIClient(ctx = undefined) {
   let cookies = parseCookies(ctx);

@@ -20,12 +20,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { RiCalendarEventFill } from 'react-icons/ri';
 import { useEffect, useState } from 'react';
 
-import { Input } from '../components/Form/Input';
-import { DatePicker } from '../components/DatePicker';
-import { useUsersInsides } from '../contexts/UsersInsides.context';
-import { ErrorData } from '../errors/Error.type';
-import { validaCpf, verifyAge } from '../utils/validate';
-import { appVerifyError } from '../errors/appVerify';
+import { Input } from '../../components/Form/Input';
+import { DatePicker } from '../../components/DatePicker';
+import { useUsersInsides } from '../../contexts/UsersInsides.context';
+import { validaCpf, verifyAge } from '../../utils/validate';
+import { appVerifyError } from '../../errors/appVerify';
+import { useCommons } from '../../contexts/Commons.context';
 
 type CreateUserFormData = {
   name: string;
@@ -87,8 +87,8 @@ const createUserFormSchema = yup.object().shape({
 
 export default function CreateUser() {
   const { createUserInsides } = useUsersInsides();
+  const { appError, setAppError, isLoading, setLoading } = useCommons();
 
-  const [appError, setAppError] = useState<Partial<ErrorData>>({});
   const [visibleCalendar, setVisibleCalendar] = useState(false);
   const [day, setDay] = useState(null);
   const { register, handleSubmit, formState, setValue } = useForm({
@@ -114,6 +114,8 @@ export default function CreateUser() {
     event
   ) => {
     event.preventDefault();
+    setLoading(true);
+    setAppError({});
     const {
       cpf,
       birth_date,
@@ -126,7 +128,6 @@ export default function CreateUser() {
       password_confirm,
       phone,
     } = values;
-    setAppError({});
     try {
       const data: CreateUserFormData = {
         cpf,
@@ -142,9 +143,11 @@ export default function CreateUser() {
       };
 
       await createUserInsides(data);
-      Router.push('/');
+      Router.push('/create/phone');
+      setLoading(false);
     } catch (error) {
       setAppError(appVerifyError(error));
+      setLoading(false);
     }
   };
 
@@ -294,13 +297,17 @@ export default function CreateUser() {
           <Flex marginTop="8" justify="flex-end">
             <HStack spacing="4">
               <Link href="/" passHref>
-                <Button as="a" colorScheme="whiteAlpha">
+                <Button
+                  as="a"
+                  colorScheme="whiteAlpha"
+                  isLoading={formState.isSubmitting || isLoading}
+                >
                   Cancelar
                 </Button>
               </Link>
               <Button
                 type="submit"
-                isLoading={formState.isSubmitting}
+                isLoading={formState.isSubmitting || isLoading}
                 colorScheme="pink"
               >
                 Avançar

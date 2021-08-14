@@ -7,6 +7,7 @@ import { SidebarDrawerProvider } from '../contexts/SidebarDrawerContext';
 import { queryClient } from '../services/queryClient';
 import { UsersInsidesProvider } from '../contexts/UsersInsides.context';
 import { AuthProvider } from '../contexts/Auth.context';
+import { CommonsProvider } from '../contexts/Commons.context';
 
 // if (process.env.NODE_ENV === 'development') {
 //   makeServer();
@@ -16,13 +17,15 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <ChakraProvider theme={theme}>
-        <AuthProvider>
-          <UsersInsidesProvider>
-            <SidebarDrawerProvider>
-              <Component {...pageProps} />
-            </SidebarDrawerProvider>
-          </UsersInsidesProvider>
-        </AuthProvider>
+        <CommonsProvider>
+          <AuthProvider>
+            <UsersInsidesProvider>
+              <SidebarDrawerProvider>
+                <Component {...pageProps} />
+              </SidebarDrawerProvider>
+            </UsersInsidesProvider>
+          </AuthProvider>
+        </CommonsProvider>
       </ChakraProvider>
       <ReactQueryDevtools />
     </QueryClientProvider>

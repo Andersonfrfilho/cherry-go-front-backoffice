@@ -1,5 +1,5 @@
 import Router from 'next/router';
-import { createContext, ReactNode, useContext } from 'react';
+import { createContext, ReactNode, useContext, useState } from 'react';
 import { AppError } from '../errors/AppError';
 import { api } from '../services/apiClient';
 import { formattedDate, removeCharacterSpecial } from '../utils/validate';
@@ -18,8 +18,23 @@ type CreateUserInsidesServiceDTO = {
   password_confirm: string;
 };
 
+type ActiveUserInsidesServiceDTO = {
+  token: string;
+  last_name: string;
+  cpf: string;
+  rg: string;
+  email: string;
+  password: string;
+  birth_date: string;
+  gender: string;
+  details?: any;
+  active?: boolean;
+  password_confirm: string;
+};
+
 type UsersInsidesContextData = {
   createUserInsides: (data: CreateUserInsidesServiceDTO) => Promise<void>;
+  activeUser: (data: CreateUserInsidesServiceDTO) => Promise<void>;
 };
 
 type RegisterProviderProps = {
@@ -42,9 +57,7 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
     password_confirm,
   }: CreateUserInsidesServiceDTO) {
     try {
-      const {
-        data: { id },
-      } = await api.post('/v1/users/clients', {
+      await api.post('/v1/users/insides', {
         email,
         password,
         password_confirm,
@@ -56,11 +69,6 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
         rg: removeCharacterSpecial(rg),
         details,
       });
-
-      await api.patch('/v1/users/insides', {
-        id,
-      });
-      Router.push('/register/phone');
     } catch (err) {
       throw new AppError({
         message: err.response.data.message,

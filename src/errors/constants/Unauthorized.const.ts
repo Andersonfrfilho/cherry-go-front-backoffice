@@ -4,25 +4,25 @@ const status_code = HTTP_ERROR_CODES_ENUM.UNAUTHORIZED;
 
 export const UNAUTHORIZED = {
   '401': {
-    '4001': {
+    '1001': {
       message: 'Senha incorreta',
       status_code,
-      code: '4001',
+      code: '1001',
     },
-    '4002': {
+    '1002': {
       message: 'Token expirado!',
       status_code,
-      code: '4002',
+      code: '1002',
     },
-    '4003': {
+    '1003': {
       message: 'Token não encontrado!',
       status_code,
-      code: '4003',
+      code: '1003',
     },
-    '4004': {
+    '1004': {
       message: 'Token invalido!',
       status_code,
-      code: '4004',
+      code: '1004',
     },
   },
 };
