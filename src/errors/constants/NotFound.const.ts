@@ -24,5 +24,10 @@ export const NOT_FOUND = {
       status_code,
       code: '4004',
     },
+    '4005': {
+      message: 'Token não encontrado!',
+      status_code,
+      code: '4005',
+    },
   },
 };

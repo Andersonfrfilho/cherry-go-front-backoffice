@@ -87,7 +87,7 @@ const createUserFormSchema = yup.object().shape({
 
 export default function CreateUser() {
   const { createUserInsides } = useUsersInsides();
-  const { appError, setAppError, isLoading, setLoading } = useCommons();
+  const { appError, setAppError, isLoading, setIsLoading } = useCommons();
 
   const [visibleCalendar, setVisibleCalendar] = useState(false);
   const [day, setDay] = useState(null);
@@ -114,7 +114,7 @@ export default function CreateUser() {
     event
   ) => {
     event.preventDefault();
-    setLoading(true);
+    setIsLoading(true);
     setAppError({});
     const {
       cpf,
@@ -143,11 +143,11 @@ export default function CreateUser() {
       };
 
       await createUserInsides(data);
-      Router.push('/create/phone');
-      setLoading(false);
+      Router.push('/create/address');
     } catch (error) {
       setAppError(appVerifyError(error));
-      setLoading(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -218,16 +218,6 @@ export default function CreateUser() {
               />
             </SimpleGrid>
             <SimpleGrid minChildWidth="240px" spacing={['6', '8']} width="100%">
-              {/* <Input
-                as={InputMask}
-                mask="+55 (**) * ****-****"
-                name="phone"
-                type="phone"
-                label="Celular:"
-                {...register('phone')}
-                error={errors.phone}
-              /> */}
-
               <Stack>
                 <Text>Gênero</Text>
                 <Select

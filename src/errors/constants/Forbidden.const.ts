@@ -5,7 +5,7 @@ const status_code = HTTP_ERROR_CODES_ENUM.FORBIDDEN;
 export const FORBIDDEN = {
   '403': {
     '3001': {
-      message: 'Token invalido',
+      message: 'Token não encontrado!',
       status_code,
       code: '3001',
     },

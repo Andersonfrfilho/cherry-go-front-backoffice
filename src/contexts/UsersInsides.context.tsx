@@ -18,13 +18,26 @@ type CreateUserInsidesServiceDTO = {
   password_confirm: string;
 };
 
-type ActiveUserInsidesServiceDTO = {
-  token: string;
+export type CreateAddressesUserInsidesServiceDTO = {
+  user_id: string;
+  street: string;
+  number: string;
+  zipcode: string;
+  district: string;
+  city: string;
+  state: string;
+  country: string;
+  longitude: string;
+  latitude: string;
+};
+
+type User = {
+  id: string;
+  name: string;
   last_name: string;
   cpf: string;
   rg: string;
   email: string;
-  password: string;
   birth_date: string;
   gender: string;
   details?: any;
@@ -34,7 +47,13 @@ type ActiveUserInsidesServiceDTO = {
 
 type UsersInsidesContextData = {
   createUserInsides: (data: CreateUserInsidesServiceDTO) => Promise<void>;
-  activeUser: (data: CreateUserInsidesServiceDTO) => Promise<void>;
+  resendActiveMailUser: (token: string) => Promise<void>;
+  resendActiveMailUserByMail: (email: string) => Promise<void>;
+  createPhoneUserInsides: (phone: string) => Promise<void>;
+  createAddressUserInsides: (
+    data: CreateAddressesUserInsidesServiceDTO
+  ) => Promise<void>;
+  user: User;
 };
 
 type RegisterProviderProps = {
@@ -44,6 +63,7 @@ type RegisterProviderProps = {
 export const UsersInsidesContext = createContext({} as UsersInsidesContextData);
 
 export function UsersInsidesProvider({ children }: RegisterProviderProps) {
+  const [user, setUser] = useState<User>(null);
   async function createUserInsides({
     email,
     password,
@@ -57,7 +77,7 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
     password_confirm,
   }: CreateUserInsidesServiceDTO) {
     try {
-      await api.post('/v1/users/insides', {
+      const { data } = await api.post('/v1/users/insides', {
         email,
         password,
         password_confirm,
@@ -69,6 +89,63 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
         rg: removeCharacterSpecial(rg),
         details,
       });
+      setUser(data);
+    } catch (err) {
+      throw new AppError({
+        message: err.response.data.message,
+        status_code: err.response.status,
+        code: err.response.data.code,
+      });
+    }
+  }
+
+  async function resendActiveMailUser(token: string) {
+    try {
+      await api.post('/v1/users/confirm/mail/resend', {
+        token,
+      });
+    } catch (err) {
+      throw new AppError({
+        message: err.response.data.message,
+        status_code: err.response.status,
+        code: err.response.data.code,
+      });
+    }
+  }
+
+  async function resendActiveMailUserByMail(email: string) {
+    try {
+      await api.post('/v1/users/confirm/mail/resend/mail', {
+        email,
+      });
+    } catch (err) {
+      throw new AppError({
+        message: err.response.data.message,
+        status_code: err.response.status,
+        code: err.response.data.code,
+      });
+    }
+  }
+
+  async function createPhoneUserInsides(phone: string) {
+    try {
+      await api.post('/v1/users/confirm/mail/resend/mail', {
+        phone,
+      });
+    } catch (err) {
+      throw new AppError({
+        message: err.response.data.message,
+        status_code: err.response.status,
+        code: err.response.data.code,
+      });
+    }
+  }
+
+  async function createAddressUserInsides(
+    data: CreateAddressesUserInsidesServiceDTO
+  ) {
+    try {
+      await api.post('/v1/users/insides/addresses', data);
     } catch (err) {
       throw new AppError({
         message: err.response.data.message,
@@ -79,7 +156,16 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
   }
 
   return (
-    <UsersInsidesContext.Provider value={{ createUserInsides }}>
+    <UsersInsidesContext.Provider
+      value={{
+        createUserInsides,
+        resendActiveMailUser,
+        resendActiveMailUserByMail,
+        createPhoneUserInsides,
+        createAddressUserInsides,
+        user,
+      }}
+    >
       {children}
     </UsersInsidesContext.Provider>
   );

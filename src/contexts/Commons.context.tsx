@@ -25,7 +25,7 @@ type CommonsContextData = {
   isLoading: boolean;
   appError: Partial<ErrorData>;
   setAppError: Dispatch<SetStateAction<Partial<ErrorData>>>;
-  setLoading: Dispatch<SetStateAction<boolean>>;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
 };
 
 type CommonsProviderProps = {
@@ -35,11 +35,11 @@ type CommonsProviderProps = {
 export const CommonsContext = createContext({} as CommonsContextData);
 
 export function CommonsProvider({ children }: CommonsProviderProps) {
-  const [isLoading, setLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [appError, setAppError] = useState<Partial<ErrorData>>({});
   return (
     <CommonsContext.Provider
-      value={{ isLoading, setLoading, appError, setAppError }}
+      value={{ isLoading, setIsLoading, appError, setAppError }}
     >
       {children}
     </CommonsContext.Provider>

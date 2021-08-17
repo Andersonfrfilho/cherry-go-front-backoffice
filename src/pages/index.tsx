@@ -2,12 +2,12 @@ import { Button, Flex, Image, Stack, Text } from '@chakra-ui/react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
 import { RiRotateLockLine, RiUserAddLine } from 'react-icons/ri';
+import Router from 'next/router';
 import { Input } from '../components/Form/Input';
 import { useAuth } from '../contexts/Auth.context';
 import { withSSRGuest } from '../utils/withSSRGuest';
-import { ErrorData } from '../errors/Error.type';
+import { useCommons } from '../contexts/Commons.context';
 
 type SignInFormData = {
   email: string;
@@ -20,7 +20,7 @@ const signInFormSchema = yup.object().shape({
 });
 
 export default function SignIn() {
-  const [appError, setAppError] = useState<Partial<ErrorData>>({});
+  const { appError, setAppError, isLoading, setIsLoading } = useCommons();
 
   const { signIn } = useAuth();
 
@@ -29,6 +29,11 @@ export default function SignIn() {
   });
 
   const { errors } = formState;
+  function handleRegisterPage() {
+    setIsLoading(true);
+    Router.push('/create');
+    setIsLoading(false);
+  }
 
   const handleSignIn: SubmitHandler<SignInFormData> = async (value, event) => {
     setAppError({});
@@ -53,61 +58,68 @@ export default function SignIn() {
       justifyContent="center"
     >
       <Flex
-        as="form"
         width="100%"
         maxWidth={360}
         backgroundColor="gray.800"
         padding="8"
         borderRadius={8}
         flexDirection="column"
-        onSubmit={handleSubmit(handleSignIn)}
       >
-        <Stack spacing="4">
-          <Image
-            src="./images/logo-title.svg"
-            fallbackSrc="./images/placeholder/240.png"
-            fit="contain"
-            width="400px"
-            height="300px"
-          />
-          {!!appError && <Text color="red">{appError.message}</Text>}
-          <Input
-            name="email"
-            type="email"
-            label="E-mail"
-            {...register('email')}
-            error={errors.email}
-          />
-          <Input
-            name="password"
-            type="password"
-            label="Senha"
-            {...register('password')}
-            error={errors.password}
-          />
-        </Stack>
-        <Button
-          type="submit"
-          marginTop="6"
-          colorScheme="pink"
-          size="lg"
-          isLoading={formState.isSubmitting}
+        <Flex
+          as="form"
+          onSubmit={handleSubmit(handleSignIn)}
+          flexDirection="column"
         >
-          Entrar
-        </Button>
+          <Stack spacing="4">
+            <Image
+              src="./images/logo-title.svg"
+              fallbackSrc="./images/placeholder/240.png"
+              fit="contain"
+              width="400px"
+              height="300px"
+            />
+            {!!appError && <Text color="red">{appError.message}</Text>}
+            <Input
+              name="email"
+              type="email"
+              label="E-mail"
+              {...register('email')}
+              error={errors.email}
+            />
+            <Input
+              name="password"
+              type="password"
+              label="Senha"
+              {...register('password')}
+              error={errors.password}
+            />
+          </Stack>
+          <Button
+            type="submit"
+            marginTop="6"
+            colorScheme="pink"
+            size="lg"
+            isLoading={formState.isSubmitting || isLoading}
+          >
+            Entrar
+          </Button>
+        </Flex>
         <Flex marginTop="3" flexDirection="row" justifyContent="space-between">
           <Button
+            type="button"
             marginRight="2"
             flex="1"
             size="lg"
             colorScheme="pink"
             aria-label="Search database"
             leftIcon={<RiUserAddLine />}
-            onClick={() => {}}
+            onClick={handleRegisterPage}
+            isLoading={isLoading}
           >
             Cadastrar
           </Button>
           <Button
+            type="button"
             marginLeft="2"
             flex="1"
             size="lg"
@@ -115,6 +127,7 @@ export default function SignIn() {
             aria-label="Search database"
             leftIcon={<RiRotateLockLine />}
             onClick={() => {}}
+            isLoading={isLoading}
           >
             Senha
           </Button>
