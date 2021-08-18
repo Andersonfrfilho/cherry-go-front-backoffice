@@ -15,8 +15,8 @@ import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Input } from '../../components/Form/Input';
 import {
   CreateAddressesUserInsidesServiceDTO,
@@ -24,6 +24,7 @@ import {
 } from '../../contexts/UsersInsides.context';
 import { appVerifyError } from '../../errors/appVerify';
 import { useCommons } from '../../contexts/Commons.context';
+import { STATES } from './states.enum';
 
 type CreateUserAddressesFormData = {
   street: string;
@@ -33,81 +34,107 @@ type CreateUserAddressesFormData = {
   city: string;
   state: string;
   country: string;
-  longitude: string;
-  latitude: string;
 };
 
 const createUserFormSchema = yup.object().shape({
-  street: yup.string().required('Nome obrigatória'),
-  number: yup.string().required('Sobrenome obrigatória'),
-  zipcode: yup.string().required('E-mail obrigatório').email('E-mail inválido'),
-  district: yup
+  // street: yup.string().required('Nome da rua obrigatória'),
+  number: yup
     .string()
-    .length(14, 'Digite um cpf valido')
-    .required('CPF obrigatório'),
-  city: yup
+    .max(5, 'Número muito grande')
+    .required('Número obrigatório'),
+  zipcode: yup
     .string()
-    .min(11, 'Digite um rg valido')
-    .max(12, 'Digite um rg valido')
-    .required('CPF obrigatório'),
-  state: yup.string().required('Gênero obrigatório'),
-  country: yup.string().required('Data de nascimento obrigatória'),
-  longitude: yup.string().required('Data de nascimento obrigatória'),
-  latitude: yup.string().required('Data de nascimento obrigatória'),
+    .length(10, 'código postal invalido')
+    .required('código postal obrigatório'),
+  district: yup.string().required('Bairro obrigatória'),
+  city: yup.string().required('Cidade obrigatória'),
+  state: yup.string().required('Estado obrigatório'),
+  country: yup.string().required('País obrigatória'),
 });
 
-export default function CreateUser() {
+export default function CreateAddressUser() {
+  const [zipcode, setZipCode] = useState('');
   const { createAddressUserInsides, user } = useUsersInsides();
   const { appError, setAppError, isLoading, setIsLoading } = useCommons();
 
-  const { register, handleSubmit, formState, watch } = useForm({
-    resolver: yupResolver(createUserFormSchema),
+  const { register, handleSubmit, formState, watch, setValue, setFocus } =
+    useForm({
+      resolver: yupResolver(createUserFormSchema),
+    });
+  watch(value => {
+    return setZipCode(value.zipcode);
   });
-  useEffect(() => {
-    const subscription = watch((value, { name, type }) =>
-      console.log(value, name, type)
-    );
-  }, [watch]);
-  const handleCreateUser: SubmitHandler<CreateUserAddressesFormData> = async (
-    values,
-    event
-  ) => {
-    event.preventDefault();
+  async function goToLogin() {
     setIsLoading(true);
-    setAppError({});
-    const {
-      street,
-      number,
-      zipcode,
-      district,
-      city,
-      state,
-      country,
-      longitude,
-      latitude,
-    } = values;
     try {
-      const data: CreateAddressesUserInsidesServiceDTO = {
-        user_id: user.id,
-        street,
-        number,
-        zipcode,
-        district,
-        city,
-        state,
-        country,
-        longitude,
-        latitude,
-      };
-
-      await createAddressUserInsides(data);
-      Router.push('/create/phone');
-    } catch (error) {
-      setAppError(appVerifyError(error));
+      await Router.replace('/');
+    } catch {
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    if (!user) {
+      goToLogin();
+    }
+  }, []);
+
+  async function findCep(cepParam: string) {
+    setIsLoading(true);
+    try {
+      const { data } = await axios.get(
+        `https://viacep.com.br/ws/${cepParam}/json/`
+      );
+
+      if (data.erro) {
+        setFocus('street');
+      } else {
+        const { logradouro, bairro, localidade, uf } = data;
+        setValue('street', logradouro, { shouldValidate: true });
+        setValue('district', bairro, { shouldValidate: true });
+        setValue('city', localidade, { shouldValidate: true });
+        setValue('state', STATES[uf], { shouldValidate: true });
+        setFocus('number');
+      }
+    } catch (error) {
+      setFocus('street');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+  useEffect(() => {
+    const zipcodeFormatted = String(zipcode).replace(/[^\d]/g, '');
+    if (zipcodeFormatted.length === 8) {
+      findCep(zipcodeFormatted);
+    }
+  }, [zipcode]);
+
+  const handleCreateAddressUser: SubmitHandler<CreateUserAddressesFormData> =
+    async (values, event) => {
+      event.preventDefault();
+      setIsLoading(true);
+      setAppError({});
+      const { street, number, district, city, state, country } = values;
+      try {
+        const data: CreateAddressesUserInsidesServiceDTO = {
+          street,
+          number,
+          zipcode: values.zipcode,
+          district,
+          city,
+          state,
+          country,
+        };
+        await createAddressUserInsides(data);
+        await Router.push('/create/phone');
+      } catch (error) {
+        setAppError(appVerifyError(error));
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   const { errors } = formState;
 
@@ -126,7 +153,7 @@ export default function CreateUser() {
           borderRadius={8}
           backgroundColor="gray.800"
           padding={['6', '8']}
-          onSubmit={handleSubmit(handleCreateUser)}
+          onSubmit={handleSubmit(handleCreateAddressUser)}
         >
           <Heading size="lg" fontWeight="normal">
             Criar Usuário Insider

@@ -35,11 +35,11 @@ type AuthProviderProps = {
 
 let authChannel = new BroadcastChannel('auth');
 
-export function signOut() {
+export async function signOut() {
   destroyCookie(undefined, 'nextauth.token');
   destroyCookie(undefined, 'nextauth.refresh_token');
   authChannel.postMessage('logout');
-  Router.push('/');
+  await Router.push('/');
 }
 export const AuthContext = createContext({} as AuthContextData);
 
@@ -103,7 +103,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       api.defaults.headers.Authorization = `Bearer ${token}`;
 
-      Router.push('/dashboard');
+      await Router.push('/dashboard');
     } catch (err) {
       throw new AppError({
         message: err.response.data.message,

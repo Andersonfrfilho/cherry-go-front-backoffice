@@ -1,3 +1,4 @@
+import axios from 'axios';
 import Router from 'next/router';
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { AppError } from '../errors/AppError';
@@ -19,7 +20,7 @@ type CreateUserInsidesServiceDTO = {
 };
 
 export type CreateAddressesUserInsidesServiceDTO = {
-  user_id: string;
+  user_id?: string;
   street: string;
   number: string;
   zipcode: string;
@@ -27,8 +28,8 @@ export type CreateAddressesUserInsidesServiceDTO = {
   city: string;
   state: string;
   country: string;
-  longitude: string;
-  latitude: string;
+  longitude?: string;
+  latitude?: string;
 };
 
 type User = {
@@ -141,11 +142,27 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
     }
   }
 
-  async function createAddressUserInsides(
-    data: CreateAddressesUserInsidesServiceDTO
-  ) {
+  async function createAddressUserInsides({
+    zipcode,
+    city,
+    country,
+    district,
+    number,
+    state,
+    street,
+  }: CreateAddressesUserInsidesServiceDTO) {
     try {
-      await api.post('/v1/users/insides/addresses', data);
+      // TODO:: adicionar a longitude e latitude
+      await api.post('/v1/users/insides/addresses', {
+        user_id: user.id,
+        zipcode,
+        city,
+        country,
+        district,
+        number,
+        state,
+        street,
+      });
     } catch (err) {
       throw new AppError({
         message: err.response.data.message,

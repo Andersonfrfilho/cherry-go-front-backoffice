@@ -51,7 +51,7 @@ export default function CreatePhoneUser() {
       };
 
       await createPhoneUserInsides(data);
-      Router.push('/');
+      await Router.push('/');
     } catch (error) {
       setAppError(appVerifyError(error));
     }

@@ -82,7 +82,7 @@ export default function ConfirmPhoneUser() {
       };
 
       await createUserInsides(data);
-      Router.push('/');
+      await Router.push('/');
     } catch (error) {
       setAppError(appVerifyError(error));
     }

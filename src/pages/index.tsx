@@ -29,9 +29,9 @@ export default function SignIn() {
   });
 
   const { errors } = formState;
-  function handleRegisterPage() {
+  async function handleRegisterPage() {
     setIsLoading(true);
-    Router.push('/create');
+    await Router.push('/create');
     setIsLoading(false);
   }
 

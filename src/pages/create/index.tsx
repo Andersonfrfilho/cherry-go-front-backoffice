@@ -143,7 +143,7 @@ export default function CreateUser() {
       };
 
       await createUserInsides(data);
-      Router.push('/create/address');
+      await Router.push('/create/address');
     } catch (error) {
       setAppError(appVerifyError(error));
     } finally {
