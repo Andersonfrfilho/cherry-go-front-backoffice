@@ -15,12 +15,15 @@ import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
 
+import { useEffect } from 'react';
 import { Input } from '../../../components/Form/Input';
-import { useUsersInsides } from '../../../contexts/UsersInsides.context';
-import { ErrorData } from '../../../errors/Error.type';
+import {
+  CreatePhoneDTO,
+  useUsersInsides,
+} from '../../../contexts/UsersInsides.context';
 import { appVerifyError } from '../../../errors/appVerify';
+import { useCommons } from '../../../contexts/Commons.context';
 
 type CreatePhoneUserFormData = {
   phone: string;
@@ -30,30 +33,77 @@ const createUserFormSchema = yup.object().shape({
   phone: yup.string().required('Celular obrigatória'),
 });
 
-export default function CreatePhoneUser() {
-  const { createPhoneUserInsides } = useUsersInsides();
+const confirmUserFormSchema = yup.object().shape({
+  code: yup
+    .string()
+    .length(4, 'Código invalido')
+    .required('Código obrigatória'),
+});
 
-  const [appError, setAppError] = useState<Partial<ErrorData>>({});
+export default function CreatePhoneUser() {
+  const { appError, setAppError, isLoading, setIsLoading } = useCommons();
+  const {
+    createPhoneUserInsides,
+    phoneConfirmation,
+    confirmPhoneUserInsides,
+    user,
+  } = useUsersInsides();
+
   const { register, handleSubmit, formState } = useForm({
-    resolver: yupResolver(createUserFormSchema),
+    resolver: yupResolver(
+      phoneConfirmation ? confirmUserFormSchema : createUserFormSchema
+    ),
   });
 
-  const handleCreateUser: SubmitHandler<CreatePhoneUserFormData> = async (
+  async function goToHome() {
+    setIsLoading(true);
+    await Router.replace('/');
+    setIsLoading(false);
+  }
+
+  useEffect(() => {
+    if (!user) {
+      goToHome();
+    }
+  }, []);
+
+  const handleCreatePhoneUser: SubmitHandler<CreatePhoneUserFormData> =
+    async values => {
+      setIsLoading(true);
+      const { phone } = values;
+      setAppError({});
+      const [country_code, ddd, digit, number] = phone.split(' ');
+
+      try {
+        const data: CreatePhoneDTO = {
+          country_code,
+          ddd,
+          number: `${digit}${number}`,
+        };
+
+        await createPhoneUserInsides(data);
+      } catch (error) {
+        setAppError(appVerifyError(error));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+  const handleConfirmPhoneUser: SubmitHandler<CreatePhoneUserFormData> = async (
     values,
     event
   ) => {
+    setIsLoading(true);
     event.preventDefault();
-    const { phone } = values;
+    const { code } = values;
     setAppError({});
     try {
-      const data: CreatePhoneUserFormData = {
-        phone,
-      };
-
-      await createPhoneUserInsides(data);
+      await confirmPhoneUserInsides(code);
       await Router.push('/');
     } catch (error) {
       setAppError(appVerifyError(error));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -69,12 +119,14 @@ export default function CreatePhoneUser() {
         paddingX="6"
       >
         <Box
-          as="form"
           flex="1"
+          as="form"
           borderRadius={8}
           backgroundColor="gray.800"
           padding={['6', '8']}
-          onSubmit={handleSubmit(handleCreateUser)}
+          onSubmit={handleSubmit(
+            phoneConfirmation ? handleConfirmPhoneUser : handleCreatePhoneUser
+          )}
         >
           <Heading size="lg" fontWeight="normal">
             Vincular celular
@@ -88,22 +140,38 @@ export default function CreatePhoneUser() {
                 mask="+55 (**) * ****-****"
                 name="phone"
                 type="phone"
-                label="Celular:"
+                label="Celular"
                 {...register('phone')}
                 error={errors.phone}
+                isDisabled={phoneConfirmation}
               />
+              {phoneConfirmation && (
+                <Input
+                  name="code"
+                  type="code"
+                  label="Código:"
+                  {...register('code')}
+                  error={errors.code}
+                  max={4}
+                  isDisabled={!phoneConfirmation}
+                />
+              )}
             </SimpleGrid>
           </VStack>
           <Flex marginTop="8" justify="flex-end">
             <HStack spacing="4">
               <Link href="/" passHref>
-                <Button as="a" colorScheme="whiteAlpha">
+                <Button
+                  as="a"
+                  colorScheme="whiteAlpha"
+                  isLoading={formState.isSubmitting || isLoading}
+                >
                   Cancelar
                 </Button>
               </Link>
               <Button
                 type="submit"
-                isLoading={formState.isSubmitting}
+                isLoading={formState.isSubmitting || isLoading}
                 colorScheme="pink"
               >
                 Avançar

@@ -1,5 +1,4 @@
-import axios from 'axios';
-import Router from 'next/router';
+import { Router } from 'next/router';
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { AppError } from '../errors/AppError';
 import { api } from '../services/apiClient';
@@ -46,15 +45,23 @@ type User = {
   password_confirm: string;
 };
 
+export type CreatePhoneDTO = {
+  country_code: string;
+  ddd: string;
+  number: string;
+};
+
 type UsersInsidesContextData = {
   createUserInsides: (data: CreateUserInsidesServiceDTO) => Promise<void>;
   resendActiveMailUser: (token: string) => Promise<void>;
   resendActiveMailUserByMail: (email: string) => Promise<void>;
-  createPhoneUserInsides: (phone: string) => Promise<void>;
+  createPhoneUserInsides: (data: CreatePhoneDTO) => Promise<void>;
   createAddressUserInsides: (
     data: CreateAddressesUserInsidesServiceDTO
   ) => Promise<void>;
+  confirmPhoneUserInsides: (code: string) => Promise<void>;
   user: User;
+  phoneConfirmation: boolean;
 };
 
 type RegisterProviderProps = {
@@ -65,6 +72,8 @@ export const UsersInsidesContext = createContext({} as UsersInsidesContextData);
 
 export function UsersInsidesProvider({ children }: RegisterProviderProps) {
   const [user, setUser] = useState<User>(null);
+  const [phoneConfirmation, setPhoneConfirmation] = useState<boolean>(false);
+  const [phoneToken, setPhoneToken] = useState<string>('');
   async function createUserInsides({
     email,
     password,
@@ -128,11 +137,39 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
     }
   }
 
-  async function createPhoneUserInsides(phone: string) {
+  async function createPhoneUserInsides({
+    ddd,
+    country_code,
+    number,
+  }: CreatePhoneDTO) {
     try {
-      await api.post('/v1/users/confirm/mail/resend/mail', {
-        phone,
+      const {
+        data: { token },
+      } = await api.post('/v1/users/insides/phones', {
+        ddd: removeCharacterSpecial(ddd),
+        country_code,
+        number: removeCharacterSpecial(number),
+        user_id: `59a4a391-e4c6-4940-acc3-4d0a8e2d8a56`,
       });
+      setPhoneToken(token);
+      setPhoneConfirmation(true);
+    } catch (err) {
+      throw new AppError({
+        message: err.response.data.message,
+        status_code: err.response.status,
+        code: err.response.data.code,
+      });
+    }
+  }
+
+  async function confirmPhoneUserInsides(code: string) {
+    try {
+      await api.post('/v1/users/insides/phones/confirm', {
+        code,
+        token: phoneToken,
+        user_id: user.id,
+      });
+      setPhoneToken('');
     } catch (err) {
       throw new AppError({
         message: err.response.data.message,
@@ -180,7 +217,9 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
         resendActiveMailUserByMail,
         createPhoneUserInsides,
         createAddressUserInsides,
+        confirmPhoneUserInsides,
         user,
+        phoneConfirmation,
       }}
     >
       {children}
