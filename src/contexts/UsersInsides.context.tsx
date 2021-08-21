@@ -1,5 +1,9 @@
 import { Router } from 'next/router';
 import { createContext, ReactNode, useContext, useState } from 'react';
+import {
+  Dispatch,
+  SetStateAction,
+} from 'toasted-notes/node_modules/@types/react';
 import { AppError } from '../errors/AppError';
 import { api } from '../services/apiClient';
 import { formattedDate, removeCharacterSpecial } from '../utils/validate';
@@ -31,6 +35,10 @@ export type CreateAddressesUserInsidesServiceDTO = {
   latitude?: string;
 };
 
+export type CreateForgotPasswordUserInsidesServiceDTO = {
+  email: string;
+};
+
 type User = {
   id: string;
   name: string;
@@ -51,6 +59,11 @@ export type CreatePhoneDTO = {
   number: string;
 };
 
+type CreateResetPasswordUserFormDTO = {
+  token: string;
+  password: string;
+};
+
 type UsersInsidesContextData = {
   createUserInsides: (data: CreateUserInsidesServiceDTO) => Promise<void>;
   resendActiveMailUser: (token: string) => Promise<void>;
@@ -60,8 +73,14 @@ type UsersInsidesContextData = {
     data: CreateAddressesUserInsidesServiceDTO
   ) => Promise<void>;
   confirmPhoneUserInsides: (code: string) => Promise<void>;
+  createForgotPasswordUserInsides: (email: string) => Promise<void>;
+  createResetPasswordUserInsides: (
+    data: CreateResetPasswordUserFormDTO
+  ) => Promise<void>;
   user: User;
   phoneConfirmation: boolean;
+  resetPasswordConfirmation: boolean;
+  setResetPasswordConfirmation: Dispatch<SetStateAction<boolean>>;
 };
 
 type RegisterProviderProps = {
@@ -73,6 +92,8 @@ export const UsersInsidesContext = createContext({} as UsersInsidesContextData);
 export function UsersInsidesProvider({ children }: RegisterProviderProps) {
   const [user, setUser] = useState<User>(null);
   const [phoneConfirmation, setPhoneConfirmation] = useState<boolean>(false);
+  const [resetPasswordConfirmation, setResetPasswordConfirmation] =
+    useState<boolean>(false);
   const [phoneToken, setPhoneToken] = useState<string>('');
   async function createUserInsides({
     email,
@@ -209,6 +230,41 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
     }
   }
 
+  async function createForgotPasswordUserInsides(email: string) {
+    try {
+      // TODO:: adicionar a longitude e latitude
+      await api.post('/v1/users/password/forgot', {
+        email,
+      });
+      setResetPasswordConfirmation(true);
+    } catch (err) {
+      throw new AppError({
+        message: err.response.data.message,
+        status_code: err.response.status,
+        code: err.response.data.code,
+      });
+    }
+  }
+
+  async function createResetPasswordUserInsides({
+    password,
+    token,
+  }: CreateResetPasswordUserFormDTO) {
+    try {
+      // TODO:: adicionar a longitude e latitude
+      await api.post('/v1/users/password/reset', {
+        password,
+        token,
+      });
+    } catch (err) {
+      throw new AppError({
+        message: err.response.data.message,
+        status_code: err.response.status,
+        code: err.response.data.code,
+      });
+    }
+  }
+
   return (
     <UsersInsidesContext.Provider
       value={{
@@ -218,8 +274,12 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
         createPhoneUserInsides,
         createAddressUserInsides,
         confirmPhoneUserInsides,
+        createForgotPasswordUserInsides,
+        createResetPasswordUserInsides,
         user,
         phoneConfirmation,
+        resetPasswordConfirmation,
+        setResetPasswordConfirmation,
       }}
     >
       {children}

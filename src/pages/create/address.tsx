@@ -22,7 +22,7 @@ import {
   CreateAddressesUserInsidesServiceDTO,
   useUsersInsides,
 } from '../../contexts/UsersInsides.context';
-import { appVerifyError } from '../../errors/appVerify';
+import { appErrorVerifyError } from '../../errors/appErrorVerify';
 import { useCommons } from '../../contexts/Commons.context';
 import { STATES } from './states.enum';
 
@@ -130,7 +130,7 @@ export default function CreateAddressUser() {
         await createAddressUserInsides(data);
         await Router.push('/create/phone');
       } catch (error) {
-        setAppError(appVerifyError(error));
+        setAppError(appErrorVerifyError(error));
       } finally {
         setIsLoading(false);
       }
@@ -156,7 +156,7 @@ export default function CreateAddressUser() {
           onSubmit={handleSubmit(handleCreateAddressUser)}
         >
           <Heading size="lg" fontWeight="normal">
-            Criar Usuário Insider
+            Criar Endereço do Usuário Insider
           </Heading>
           <Divider marginY="6" borderColor="gray.700" />
           <VStack spacing="8">

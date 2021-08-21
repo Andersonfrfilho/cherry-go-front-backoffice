@@ -8,6 +8,7 @@ import { Input } from '../components/Form/Input';
 import { useAuth } from '../contexts/Auth.context';
 import { withSSRGuest } from '../utils/withSSRGuest';
 import { useCommons } from '../contexts/Commons.context';
+import { appErrorVerifyError } from '../errors/appErrorVerify';
 
 type SignInFormData = {
   email: string;
@@ -35,9 +36,16 @@ export default function SignIn() {
     setIsLoading(false);
   }
 
+  async function handleForgotPasswordPage() {
+    setIsLoading(true);
+    await Router.push('/password/forgot');
+    setIsLoading(false);
+  }
+
   const handleSignIn: SubmitHandler<SignInFormData> = async (value, event) => {
-    setAppError({});
     event.preventDefault();
+    setIsLoading(true);
+    setAppError({});
     const { email, password } = value;
     const data = {
       email,
@@ -46,7 +54,9 @@ export default function SignIn() {
     try {
       await signIn(data);
     } catch (error) {
-      setAppError(error);
+      setAppError(appErrorVerifyError(error));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -78,13 +88,18 @@ export default function SignIn() {
               width="400px"
               height="300px"
             />
-            {!!appError && <Text color="red">{appError.message}</Text>}
+            {!!appError && (
+              <Flex justifyContent="center" alignItems="center">
+                <Text color="red">{appError.message}</Text>
+              </Flex>
+            )}
             <Input
               name="email"
               type="email"
               label="E-mail"
               {...register('email')}
               error={errors.email}
+              isDisabled={isLoading}
             />
             <Input
               name="password"
@@ -92,6 +107,7 @@ export default function SignIn() {
               label="Senha"
               {...register('password')}
               error={errors.password}
+              isDisabled={isLoading}
             />
           </Stack>
           <Button
@@ -126,7 +142,7 @@ export default function SignIn() {
             colorScheme="pink"
             aria-label="Search database"
             leftIcon={<RiRotateLockLine />}
-            onClick={() => {}}
+            onClick={handleForgotPasswordPage}
             isLoading={isLoading}
           >
             Senha

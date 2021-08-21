@@ -9,5 +9,10 @@ export const BAD_REQUEST = {
       status_code,
       code: '0001',
     },
+    '0002': {
+      message: 'Informações invalidas!',
+      status_code,
+      code: '0002',
+    },
   },
 };

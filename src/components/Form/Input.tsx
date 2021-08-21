@@ -27,10 +27,19 @@ interface InputProps extends ChakraInputProps {
   button?: boolean;
   buttonProps?: ButtonProps;
   mask?: string;
+  isDisabled?: boolean;
 }
 
 const InputBase: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
-  { name, label, error = null, button, buttonProps, ...rest },
+  {
+    name,
+    label,
+    isDisabled = false,
+    error = null,
+    button,
+    buttonProps,
+    ...rest
+  },
   ref
 ) => {
   return (
@@ -46,6 +55,7 @@ const InputBase: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
           _hover={{
             backgroundColor: 'gray.900',
           }}
+          isDisabled={isDisabled}
           size="lg"
           ref={ref}
           {...rest}

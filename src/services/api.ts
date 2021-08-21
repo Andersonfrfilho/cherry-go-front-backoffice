@@ -30,7 +30,7 @@ export function setupAPIClient(ctx = undefined) {
             isRefreshing = true;
 
             api
-              .post('/refresh', {
+              .post('/v1/users/refresh_token', {
                 refresh_token,
               })
               .then(response => {

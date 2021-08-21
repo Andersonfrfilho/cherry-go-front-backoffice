@@ -11,10 +11,15 @@ import { BroadcastChannel } from 'broadcast-channel';
 import { AppError } from '../errors/AppError';
 import { api } from '../services/apiClient';
 
-type User = {
-  email: string;
+type UserType = {
+  type: string;
   permissions: string[];
   roles: string[];
+};
+
+type User = {
+  email: string;
+  types: UserType[];
 };
 
 type SignInCredentials = {
@@ -78,12 +83,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   async function signIn({ email, password }: SignInCredentials) {
     try {
-      const response = await api.post('/sessions', {
+      const response = await api.post('/v1/users/sessions', {
         email,
         password,
       });
 
-      const { permissions, roles, token, refresh_token } = response.data;
+      const { user: user_response, token, refresh_token } = response.data;
       // sempre que executar do lado do browser deixe undefined
       setCookie(undefined, 'nextauth.token', token, {
         maxAge: 60 * 60 * 24 * 30, // 30 days
@@ -95,10 +100,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         path: '/',
       });
 
+      const user_types = user_response.types.map(user_type => ({
+        type: user_type.user_type,
+        roles: user_type.roles,
+        permissions: user_type.permissions,
+      }));
+
       setUser({
-        email,
-        permissions,
-        roles,
+        email: user_response.email,
+        types: user_types,
       });
 
       api.defaults.headers.Authorization = `Bearer ${token}`;
@@ -108,6 +118,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw new AppError({
         message: err.response.data.message,
         status_code: err.response.status,
+        code: err.response.data.code,
       });
     }
   }

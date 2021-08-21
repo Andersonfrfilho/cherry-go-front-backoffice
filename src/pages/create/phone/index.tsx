@@ -129,7 +129,7 @@ export default function CreatePhoneUser() {
           )}
         >
           <Heading size="lg" fontWeight="normal">
-            Vincular celular
+            {phoneConfirmation ? 'Confirmar celular' : 'Vincular celular'}
           </Heading>
           <Divider marginY="6" borderColor="gray.700" />
           <VStack spacing="8">

@@ -7,7 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import { useCommons } from '../../contexts/Commons.context';
 import { ssrApiClient } from '../../services/api';
-import { appVerifyError } from '../../errors/appVerify';
+import { appErrorVerifyError } from '../../errors/appErrorVerify';
 import { useUsersInsides } from '../../contexts/UsersInsides.context';
 import { Input } from '../../components/Form/Input';
 
@@ -54,7 +54,7 @@ export default function SignIn(props) {
       setTitle('E-mail reenviado!');
       setAppError(null);
     } catch (error) {
-      setAppError(appVerifyError(error));
+      setAppError(appErrorVerifyError(error));
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +69,7 @@ export default function SignIn(props) {
       return;
     }
     setAppError(
-      appVerifyError({
+      appErrorVerifyError({
         status_code: props.appError.status_code,
         code: props.appError.code,
       })

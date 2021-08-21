@@ -24,7 +24,7 @@ import { Input } from '../../components/Form/Input';
 import { DatePicker } from '../../components/DatePicker';
 import { useUsersInsides } from '../../contexts/UsersInsides.context';
 import { validaCpf, verifyAge } from '../../utils/validate';
-import { appVerifyError } from '../../errors/appVerify';
+import { appErrorVerifyError } from '../../errors/appErrorVerify';
 import { useCommons } from '../../contexts/Commons.context';
 
 type CreateUserFormData = {
@@ -145,7 +145,7 @@ export default function CreateUser() {
       await createUserInsides(data);
       await Router.push('/create/address');
     } catch (error) {
-      setAppError(appVerifyError(error));
+      setAppError(appErrorVerifyError(error));
     } finally {
       setIsLoading(false);
     }
