@@ -55,3 +55,7 @@ export function formattedDate(date: string): Date {
   const [day, month, year] = date.split('/');
   return new Date(`${year}-${month}-${day}`);
 }
+
+export function capitalize(string = '') {
+  return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+}

@@ -56,62 +56,51 @@ export default function Dashboard() {
 
   useEffect(() => {
     const { 'nextauth.token': token } = parseCookies();
+
     api
-      .get('/me', {
-        headers: { Authorization: token },
+      .get('/v1/users/me', {
+        headers: { Authorization: `Bearer ${token}` },
       })
       .then(response => console.log(response))
-      .catch(err => console.log(err));
+      .catch(err => {
+        console.log(err);
+      });
   }, []);
 
   return (
-    <Can permissions={['metrics.list']}>
-      <Flex direction="column" height="100vh">
-        <Header />
-        <Flex
-          width="100%"
-          marginY="6"
-          maxWidth={1480}
-          marginX="auto"
-          paddingX="6"
-        >
-          <Sidebar />
-          <SimpleGrid flex="1" gap="4" minChildWidth="320px" align="flex-start">
-            <Box
-              padding={['6', '8']}
-              backgroundColor="gray.800"
-              borderRadius={8}
-              paddingBottom="4"
-            >
-              <Text fontSize="lg" marginBottom="4">
-                Inscritos da semana
-              </Text>
-              <Chart
-                options={options}
-                series={series}
-                type="area"
-                height={160}
-              />
-            </Box>
-            <Box
-              padding={['6', '8']}
-              backgroundColor="gray.800"
-              borderRadius={8}
-            >
-              <Text fontSize="lg" marginBottom="4">
-                Taxa de abertura
-              </Text>
-              <Chart
-                options={options}
-                series={series}
-                type="area"
-                height={160}
-              />
-            </Box>
-          </SimpleGrid>
-        </Flex>
+    <Flex direction="column" height="100vh">
+      <Header />
+      <Flex
+        width="100%"
+        marginY="6"
+        maxWidth={1480}
+        marginX="auto"
+        paddingX="6"
+      >
+        <Sidebar />
+        <SimpleGrid flex="1" gap="4" minChildWidth="320px" align="flex-start">
+          {/* <Can permissions={['metrics.list']}> */}
+          <Box
+            padding={['6', '8']}
+            backgroundColor="gray.800"
+            borderRadius={8}
+            paddingBottom="4"
+          >
+            <Text fontSize="lg" marginBottom="4">
+              Inscritos da semana
+            </Text>
+            <Chart options={options} series={series} type="area" height={160} />
+          </Box>
+          <Box padding={['6', '8']} backgroundColor="gray.800" borderRadius={8}>
+            <Text fontSize="lg" marginBottom="4">
+              Taxa de abertura
+            </Text>
+            <Chart options={options} series={series} type="area" height={160} />
+          </Box>
+          {/* </Can> */}
+        </SimpleGrid>
       </Flex>
-    </Can>
+    </Flex>
   );
 }
 

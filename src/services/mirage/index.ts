@@ -105,6 +105,7 @@ export function makeServer() {
           email,
         });
       });
+      
       this.get('/users', function (schema, request) {
         const { page = 1, per_page = 10 } = request.queryParams;
         const total = schema.all('user').length;
@@ -119,7 +120,7 @@ export function makeServer() {
       });
 
       this.get('/users/:id');
-      this.get('/me', function (schema, request) {
+      this.get('/v1/users/me', function (schema, request) {
         // const { Authorization: authorization } = request.requestHeaders;
         // if (!authorization) {
         //   return new Response(403, undefined, {

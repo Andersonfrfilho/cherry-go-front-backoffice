@@ -25,5 +25,29 @@
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "baseUrl": "./src",
+  "paths": {
+    "@modules/*": [
+      "modules/*"
+    ],
+    "@config/*": [
+      "config/*"
+    ],
+    "@shared/*": [
+      "shared/*"
+    ],
+    "@errors/*": [
+      "errors/*"
+    ],
+    "@utils/*": [
+      "utils/*"
+    ],
+    "@database/*": [
+      "database/*"
+    ],
+    "@root/*": [
+      "../*"
+    ]
+  },
 }

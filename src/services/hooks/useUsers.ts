@@ -11,29 +11,52 @@ type GetUsersResponse = {
   totalCount: number;
   users: User[];
 };
-export async function getUsers(page: number): Promise<GetUsersResponse> {
-  const { data: data_response, headers } = await api.get('/users', {
+
+interface Order {
+  property: string;
+  ordering: 'ASC' | 'DESC';
+}
+export interface PaginationPropsDTO {
+  per_page?: string;
+  fields?: Partial<User>;
+  page?: string;
+  order?: Order;
+}
+
+export async function getUsers(
+  data: PaginationPropsDTO
+): Promise<GetUsersResponse> {
+  const { data: data_response } = await api.get('/users', {
     params: {
-      page,
+      ...data,
     },
   });
-  const totalCount = Number(headers['x-total-count']);
-  const users = data_response.users.map(user => {
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      createdAt: new Date(user.createdAt).toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-      }),
-    };
-  });
+
+  console.log(data_response);
+
+  // const totalCount = Number(headers['x-total-count']);
+  // const users = data_response.users.map(user => {
+  //   return {
+  //     id: user.id,
+  //     name: user.name,
+  //     email: user.email,
+  //     createdAt: new Date(user.createdAt).toLocaleDateString('pt-BR', {
+  //       day: '2-digit',
+  //       month: 'long',
+  //       year: 'numeric',
+  //     }),
+  //   };
+  // });
 
   return {
-    users,
-    totalCount,
+    users: [
+      {
+        id: 'user.id',
+        name: 'user.name',
+        email: 'user.email',
+      },
+    ],
+    totalCount: 10,
   };
 }
 

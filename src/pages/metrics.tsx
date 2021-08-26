@@ -13,7 +13,8 @@ export function Metrics() {
 export const getServerSideProps = withSSRAuth(
   async ctx => {
     const apiClient = setupAPIClient(ctx);
-    const response = await apiClient.get('/me');
+    console.log('##########token - pages');
+    const response = await apiClient.get('/v1/users/me');
 
     return {
       props: {},

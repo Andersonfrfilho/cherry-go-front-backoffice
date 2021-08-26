@@ -11,15 +11,33 @@ import { BroadcastChannel } from 'broadcast-channel';
 import { AppError } from '../errors/AppError';
 import { api } from '../services/apiClient';
 
-type UserType = {
-  type: string;
-  permissions: string[];
-  roles: string[];
+type UserTypes = {
+  id: string;
+  name: string;
+  description?: string | null;
 };
 
-type User = {
+type Types = {
+  id: string;
+  user_id: string;
+  user_type_id: string;
+  active: boolean;
+  roles: string[];
+  permissions: string[];
+  created_at: Date;
+  updated_at?: Date | null;
+  deleted_at?: Date | null;
+  user_type: UserTypes;
+};
+
+export type User = {
   email: string;
-  types: UserType[];
+  name: string;
+  last_name: string;
+  image: any;
+  roles: string[];
+  permissions: string[];
+  types: string[];
 };
 
 type SignInCredentials = {
@@ -49,7 +67,15 @@ export async function signOut() {
 export const AuthContext = createContext({} as AuthContextData);
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User>();
+  const [user, setUser] = useState<User>({
+    name: 'admin',
+    last_name: 'super user',
+    email: 'admin@cherry-go.love',
+    image: [],
+    types: [],
+    roles: [],
+    permissions: [],
+  });
   const isAuthenticated = !!user;
   useEffect(() => {
     authChannel = new BroadcastChannel('auth');
@@ -65,15 +91,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
   useEffect(() => {
     const { 'nextauth.token': token } = parseCookies();
+
     if (token) {
       api
-        .get('/me', {
-          headers: { Authorization: token },
+        .get('/v1/users/me', {
+          headers: { Authorization: `Bearer ${token}` },
         })
         .then(response => {
-          const { email, permissions, roles } = response.data;
+          const { email, types, name, last_name, image_profile } =
+            response.data;
+          const data = types
+            .map(type => ({
+              roles: type.roles,
+              permissions: type.permissions,
+              types: [type.user_type.name],
+            }))
+            .reduce(
+              (accumulator, currentValue) => ({
+                ...accumulator,
+                ...currentValue,
+              }),
+              {}
+            );
 
-          setUser({ email, permissions, roles });
+          setUser({
+            email,
+            name,
+            last_name,
+            image: image_profile,
+            permissions: data.permissions,
+            roles: data.roles,
+            types: data.types,
+          });
         })
         .catch(() => {
           signOut();
@@ -100,15 +149,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
         path: '/',
       });
 
-      const user_types = user_response.types.map(user_type => ({
-        type: user_type.user_type,
-        roles: user_type.roles,
-        permissions: user_type.permissions,
-      }));
+      const data = user_response.types
+        .map(type => ({
+          roles: type.roles,
+          permissions: type.permissions,
+          types: [type.user_type.name],
+        }))
+        .reduce(
+          (accumulator, currentValue) => ({
+            ...accumulator,
+            ...currentValue,
+          }),
+          {}
+        );
 
       setUser({
-        email: user_response.email,
-        types: user_types,
+        email,
+        name: user_response.name,
+        last_name: user_response.last_name,
+        image: user_response.image_profile,
+        permissions: data.permissions,
+        roles: data.roles,
+        types: data.types,
       });
 
       api.defaults.headers.Authorization = `Bearer ${token}`;
