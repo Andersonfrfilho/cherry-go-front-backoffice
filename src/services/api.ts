@@ -1,17 +1,18 @@
 import axios, { AxiosError } from 'axios';
 import { parseCookies, setCookie } from 'nookies';
+import { config } from '../config/environment';
 import { signOut } from '../contexts/Auth.context';
 import { AppError } from '../errors/AppError';
 
 let isRefreshing = false;
 let failedRequestQueue = [];
-export const ssrApiClient = axios.create({ baseURL: 'http://localhost:3333' });
+export const ssrApiClient = axios.create({ baseURL: config.backend.base_url });
 
 export function setupAPIClient(ctx = undefined) {
   let cookies = parseCookies(ctx);
 
   const api = axios.create({
-    baseURL: 'http://localhost:3333',
+    baseURL: config.backend.base_url,
     headers: { Authorization: `Bearer ${cookies['nextauth.token'] || '123'}` },
   });
 
@@ -48,7 +49,7 @@ export function setupAPIClient(ctx = undefined) {
                   {
                     maxAge: 60 * 60 * 24 * 30, // 30 days
                     path: '/',
-                  }
+                  },
                 );
 
                 api.defaults.headers.Authorization = `Bearer ${token}`;
@@ -89,12 +90,12 @@ export function setupAPIClient(ctx = undefined) {
             new AppError({
               message: 'user is not authenticated',
               status_code: 401,
-            })
+            }),
           );
         }
       }
       return Promise.reject(error);
-    }
+    },
   );
   return api;
 }

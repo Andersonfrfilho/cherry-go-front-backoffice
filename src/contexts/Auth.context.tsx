@@ -29,15 +29,31 @@ type Types = {
   deleted_at?: Date | null;
   user_type: UserTypes;
 };
-
+type User_Document_Image = {
+  id: string;
+  link: string;
+};
+export type User_Document = {
+  id: string;
+  user_id: string;
+  image_id: string;
+  value: string;
+  description: string;
+  created_at: string;
+  updated_at: null;
+  deleted_at: null;
+  image: User_Document_Image;
+};
 export type User = {
+  id: string;
   email: string;
   name: string;
   last_name: string;
   image: any;
   roles: string[];
   permissions: string[];
-  types: string[];
+  types: Types[];
+  documents: User_Document[];
 };
 
 type SignInCredentials = {
@@ -111,7 +127,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 ...accumulator,
                 ...currentValue,
               }),
-              {}
+              {},
             );
 
           setUser({
@@ -160,7 +176,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             ...accumulator,
             ...currentValue,
           }),
-          {}
+          {},
         );
 
       setUser({

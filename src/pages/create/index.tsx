@@ -62,7 +62,7 @@ const createUserFormSchema = yup.object().shape({
   email: yup.string().required('E-mail obrigatório').email('E-mail inválido'),
   cpf: yup
     .string()
-    .cpfValidation('cpf validation')
+    // .cpfValidation('cpf validation')
     .length(14, 'Digite um cpf valido')
     .required('CPF obrigatório'),
   rg: yup
@@ -73,7 +73,7 @@ const createUserFormSchema = yup.object().shape({
   gender: yup.string().required('Gênero obrigatório'),
   birth_date: yup
     .string()
-    .ageValidation('Sua idade não é permitida')
+    // .ageValidation('Sua idade não é permitida')
     .required('Data de nascimento obrigatória'),
   password: yup
     .string()
@@ -111,7 +111,7 @@ export default function CreateUser() {
 
   const handleCreateUser: SubmitHandler<CreateUserFormData> = async (
     values,
-    event
+    event,
   ) => {
     event.preventDefault();
     setIsLoading(true);

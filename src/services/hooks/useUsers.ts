@@ -8,61 +8,65 @@ type User = {
   createdAt: string;
 };
 type GetUsersResponse = {
-  totalCount: number;
+  total: number;
   users: User[];
+  current_page: number;
+  pages_total: number;
 };
 
-interface Order {
-  property: string;
-  ordering: 'ASC' | 'DESC';
-}
 export interface PaginationPropsDTO {
-  per_page?: string;
+  limit?: number;
   fields?: Partial<User>;
-  page?: string;
-  order?: Order;
+  skip?: number;
+  order?: string;
 }
 
-export async function getUsers(
-  data: PaginationPropsDTO
-): Promise<GetUsersResponse> {
-  const { data: data_response } = await api.get('/users', {
+export async function getUsersProviders({
+  limit = 10,
+  skip = 0,
+  order = 'created_at-',
+  fields = undefined,
+}: PaginationPropsDTO): Promise<GetUsersResponse> {
+  const { data } = await api.get('/v1/users/providers', {
     params: {
-      ...data,
+      limit,
+      skip,
+      order,
+      fields,
     },
   });
 
-  console.log(data_response);
-
-  // const totalCount = Number(headers['x-total-count']);
-  // const users = data_response.users.map(user => {
-  //   return {
-  //     id: user.id,
-  //     name: user.name,
-  //     email: user.email,
-  //     createdAt: new Date(user.createdAt).toLocaleDateString('pt-BR', {
-  //       day: '2-digit',
-  //       month: 'long',
-  //       year: 'numeric',
-  //     }),
-  //   };
-  // });
+  const { results, total, current_page, pages_total } = data;
 
   return {
-    users: [
-      {
-        id: 'user.id',
-        name: 'user.name',
-        email: 'user.email',
-      },
-    ],
-    totalCount: 10,
+    users: results,
+    total,
+    current_page,
+    pages_total,
   };
 }
 
-export function useUsers(page: number, options: UseQueryOptions) {
-  return useQuery(['users', page], () => getUsers(page), {
-    staleTime: 1000 * 60 * 10,
-    ...options,
-  });
+export function useUsers(
+  {
+    per_page = '10',
+    page = '1',
+    order = { property: 'name', ordering: 'DESC' },
+    fields = undefined,
+  }: PaginationPropsDTO,
+  options: UseQueryOptions,
+) {
+  return useQuery(
+    ['users', page],
+    () =>
+      getUsersProviders({
+        per_page,
+        page,
+        order,
+        fields,
+      }),
+    {
+      staleTime: 1000 * 60 * 10,
+      ...options,
+    },
+  );
 }

@@ -1,12 +1,15 @@
 import { memo, useMemo } from 'react';
 import { Stack, Box, Text } from '@chakra-ui/react';
 import { PaginationItem } from './PaginationItem';
+import { PaginationPropsDTO } from '../../services/hooks/useUsers';
 
 export type PaginationProps = {
-  totalCountOfRegisters: number;
-  registersPerPage?: number;
+  total: number;
+  limit?: number;
   currentPage?: number;
-  onPageChange: (page: number) => void;
+  onPageChange: (data: PaginationPropsDTO) => void;
+  pageProps: PaginationPropsDTO;
+  lastPage: number;
 };
 
 const siblingsCount = 1;
@@ -18,34 +21,50 @@ function generatePagesArray(from: number, to: number) {
 }
 
 function PaginationComponent({
-  totalCountOfRegisters,
-  registersPerPage = 10,
+  total,
+  limit = 10,
   currentPage = 1,
   onPageChange,
+  lastPage,
+  pageProps,
 }: PaginationProps) {
   // useMemo
   /**
    * 1. Calculo pesados
    * 2. Igualdade referencial
    */
-  const { lastPage, nextPages, previousPages } = useMemo(
-    () => ({
-      lastPage: Math.floor(totalCountOfRegisters / registersPerPage),
-      previousPages:
-        currentPage > 1
-          ? generatePagesArray(currentPage - 1 - siblingsCount, currentPage - 1)
-          : [],
-      nextPages:
-        currentPage < lastPage
-          ? generatePagesArray(
-              currentPage,
-              Math.min(currentPage + siblingsCount, lastPage)
-            )
-          : [],
-    }),
-    [totalCountOfRegisters, registersPerPage, currentPage, onPageChange]
-  );
 
+  const previousPages =
+    currentPage > 1
+      ? generatePagesArray(currentPage - 1 - siblingsCount, currentPage - 1)
+      : [];
+
+  const nextPages =
+    currentPage < lastPage
+      ? generatePagesArray(
+          currentPage,
+          Math.min(currentPage + siblingsCount, lastPage),
+        )
+      : [];
+  // const { lastPage, nextPages, previousPages } = useMemo(
+  //   () => ({
+  //     lastPage: Math.floor(totalCountOfRegisters / registersPerPage),
+  //     previousPages:
+  //       currentPage > 1
+  //         ? generatePagesArray(currentPage - 1 - siblingsCount, currentPage - 1)
+  //         : [],
+  //     nextPages:
+  //       currentPage < lastPage
+  //         ? generatePagesArray(
+  //             currentPage,
+  //             Math.min(currentPage + siblingsCount, lastPage)
+  //           )
+  //         : [],
+  //   }),
+  //   [totalCountOfRegisters, registersPerPage, currentPage, onPageChange]
+  // );
+  // console.log('###########lastPage');
+  // console.log(lastPage);
   // const previousPages = useMemo(
   //   () =>
   //     currentPage > 1
@@ -74,12 +93,17 @@ function PaginationComponent({
       alignItems="center"
     >
       <Box>
-        <strong>0</strong> - <strong>10</strong> de <strong>100</strong>
+        <strong>{pageProps.skip}</strong> - <strong>{pageProps.limit}</strong>{' '}
+        de <strong>{total}</strong>
       </Box>
       <Stack direction="row" spacing="2">
         {currentPage > 1 + siblingsCount && (
           <>
-            <PaginationItem onPageChange={onPageChange} number={1} />
+            <PaginationItem
+              onPageChange={onPageChange}
+              number={1}
+              pageProps={pageProps}
+            />
             {currentPage > 2 + siblingsCount && (
               <Text color="gray.300" width="8" textAlign="center">
                 ...
@@ -95,6 +119,7 @@ function PaginationComponent({
                 onPageChange={onPageChange}
                 key={page}
                 number={page}
+                pageProps={pageProps}
               />
             );
           })}
@@ -103,6 +128,7 @@ function PaginationComponent({
           onPageChange={onPageChange}
           number={currentPage}
           isCurrent
+          pageProps={pageProps}
         />
 
         {nextPages.length > 0 &&
@@ -112,6 +138,7 @@ function PaginationComponent({
                 onPageChange={onPageChange}
                 key={page}
                 number={page}
+                pageProps={pageProps}
               />
             );
           })}
@@ -123,7 +150,11 @@ function PaginationComponent({
                 ...
               </Text>
             )}
-            <PaginationItem onPageChange={onPageChange} number={lastPage} />
+            <PaginationItem
+              onPageChange={onPageChange}
+              number={lastPage}
+              pageProps={pageProps}
+            />
           </>
         )}
       </Stack>

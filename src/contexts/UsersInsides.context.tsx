@@ -6,7 +6,9 @@ import {
 } from 'toasted-notes/node_modules/@types/react';
 import { AppError } from '../errors/AppError';
 import { api } from '../services/apiClient';
+import { PaginationPropsDTO } from '../services/hooks/useUsers';
 import { formattedDate, removeCharacterSpecial } from '../utils/validate';
+import { User as UserAuth } from '../../../contexts/Auth.context';
 
 type CreateUserInsidesServiceDTO = {
   name: string;
@@ -64,18 +66,31 @@ type CreateResetPasswordUserFormDTO = {
   password: string;
 };
 
+interface ActiveUserProvidersDTO {
+  user_id: string;
+  active: boolean;
+  user_type_user_id: string;
+}
+interface ActiveUserProviderWithPaginationDTO {
+  users: ActiveUserProvidersDTO[];
+  paginationProps: PaginationPropsDTO;
+}
+
 type UsersInsidesContextData = {
   createUserInsides: (data: CreateUserInsidesServiceDTO) => Promise<void>;
   resendActiveMailUser: (token: string) => Promise<void>;
   resendActiveMailUserByMail: (email: string) => Promise<void>;
   createPhoneUserInsides: (data: CreatePhoneDTO) => Promise<void>;
+  activeUserProviders: (
+    data: ActiveUserProviderWithPaginationDTO,
+  ) => Promise<User[]>;
   createAddressUserInsides: (
-    data: CreateAddressesUserInsidesServiceDTO
+    data: CreateAddressesUserInsidesServiceDTO,
   ) => Promise<void>;
   confirmPhoneUserInsides: (code: string) => Promise<void>;
   createForgotPasswordUserInsides: (email: string) => Promise<void>;
   createResetPasswordUserInsides: (
-    data: CreateResetPasswordUserFormDTO
+    data: CreateResetPasswordUserFormDTO,
   ) => Promise<void>;
   user: User;
   phoneConfirmation: boolean;
@@ -265,6 +280,29 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
     }
   }
 
+  async function activeUserProviders({
+    users: data,
+    paginationProps,
+  }: ActiveUserProviderWithPaginationDTO): Promise<UserAuth[]> {
+    try {
+      // TODO:: adicionar a longitude e latitude
+      const { limit, skip } = paginationProps;
+      const {
+        data: { results: users },
+      } = await api.patch(
+        `/v1/users/providers/type/active?limit=${limit}&skip=${skip}`,
+        data,
+      );
+      return users;
+    } catch (err) {
+      throw new AppError({
+        message: err.response.data.message,
+        status_code: err.response.status,
+        code: err.response.data.code,
+      });
+    }
+  }
+
   return (
     <UsersInsidesContext.Provider
       value={{
@@ -276,6 +314,7 @@ export function UsersInsidesProvider({ children }: RegisterProviderProps) {
         confirmPhoneUserInsides,
         createForgotPasswordUserInsides,
         createResetPasswordUserInsides,
+        activeUserProviders,
         user,
         phoneConfirmation,
         resetPasswordConfirmation,

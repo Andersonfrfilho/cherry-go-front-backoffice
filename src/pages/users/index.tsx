@@ -23,24 +23,22 @@ import { GetServerSideProps } from 'next';
 import { Header } from '../../components/Header';
 import { Pagination, PaginationProps } from '../../components/Pagination';
 import { Sidebar } from '../../components/Sidebar';
-import { getUsers, useUsers } from '../../services/hooks/useUsers';
+import {
+  getUsers,
+  PaginationPropsDTO,
+  useUsers,
+} from '../../services/hooks/useUsers';
 import { queryClient } from '../../services/queryClient';
 import { api } from '../../services/apiClient';
 
-// example the dynamic itens
-// const AddProductToWishList = dynamic<PaginationProps>(
-//   () => {
-//     return import('../../components/Pagination').then(mod => mod.Pagination);
-//   },
-//   {
-//     loading: () => <span>Carregando</span>,
-//   }
-// );
-// <AddProductToWishList />;
-
-export default function UserList({ users, totalCount }) {
-  const [page, setPage] = useState(1);
-  const { data, isLoading, isFetching, error } = useUsers(page, {
+export default function UserList({ users, total }) {
+  const [pageProps, setPageProps] = useState<PaginationPropsDTO>({
+    per_page: '10',
+    page: '1',
+    order: { property: 'name', ordering: 'DESC' },
+    fields: undefined,
+  });
+  const { data, isLoading, isFetching, error } = useUsers(pageProps, {
     initialData: users,
   });
 
@@ -49,16 +47,16 @@ export default function UserList({ users, totalCount }) {
     lg: true,
   });
 
-  async function handlePrefetUser(userId: string) {
+  async function handlePrefectUser(userId: string) {
     await queryClient.prefetchQuery(
       ['user', userId],
       async () => {
-        const response = await api.get(`/users/${userId}`);
+        const response = await api.get(`/v1/users/${userId}`);
         return response.data;
       },
       {
         staleTime: 1000 * 60 * 10,
-      }
+      },
     );
   }
 
@@ -129,7 +127,7 @@ export default function UserList({ users, totalCount }) {
                           <Box>
                             <Link
                               color="purple.400"
-                              onMouseEnter={() => handlePrefetUser(user.id)}
+                              onMouseEnter={() => handlePrefectUser(user.id)}
                             >
                               <Text fontWeight="bold">{user.name}</Text>
                             </Link>
@@ -160,9 +158,10 @@ export default function UserList({ users, totalCount }) {
                 </Tbody>
               </Table>
               <Pagination
-                totalCountOfRegisters={totalCount}
-                currentPage={page}
-                onPageChange={setPage}
+                totalCountOfRegisters={total}
+                currentPage={Number(pageProps.page)}
+                pageProps={pageProps}
+                onPageChange={setPageProps}
               />
             </>
           )}
@@ -173,8 +172,8 @@ export default function UserList({ users, totalCount }) {
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const { users, totalCount } = await getUsers(1);
+  const { users, total } = await getUsers({});
   return {
-    props: { users, totalCount },
+    props: { users, total },
   };
 };
