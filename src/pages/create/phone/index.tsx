@@ -22,13 +22,15 @@ import {
   CreatePhoneDTO,
   useUsersInsides,
 } from '../../../contexts/UsersInsides.context';
-import { appVerifyError } from '../../../errors/appVerify';
+import { appErrorVerifyError } from '../../../errors/appErrorVerify';
 import { useCommons } from '../../../contexts/Commons.context';
 
 type CreatePhoneUserFormData = {
   phone: string;
 };
-
+type ConfirmPhoneUserFormData = {
+  code: string;
+};
 const createUserFormSchema = yup.object().shape({
   phone: yup.string().required('Celular obrigatória'),
 });
@@ -50,9 +52,15 @@ export default function CreatePhoneUser() {
   } = useUsersInsides();
 
   const { register, handleSubmit, formState } = useForm({
-    resolver: yupResolver(
-      phoneConfirmation ? confirmUserFormSchema : createUserFormSchema
-    ),
+    resolver: yupResolver(createUserFormSchema),
+  });
+
+  const {
+    register: registerConfirm,
+    handleSubmit: handleSubmitConfirm,
+    formState: formStateConfirm,
+  } = useForm({
+    resolver: yupResolver(confirmUserFormSchema),
   });
 
   async function goToHome() {
@@ -83,32 +91,30 @@ export default function CreatePhoneUser() {
 
         await createPhoneUserInsides(data);
       } catch (error) {
-        setAppError(appVerifyError(error));
+        setAppError(appErrorVerifyError(error));
       } finally {
         setIsLoading(false);
       }
     };
 
-  const handleConfirmPhoneUser: SubmitHandler<CreatePhoneUserFormData> = async (
-    values,
-    event
-  ) => {
-    setIsLoading(true);
-    event.preventDefault();
-    const { code } = values;
-    setAppError({});
-    try {
-      await confirmPhoneUserInsides(code);
-      await Router.push('/');
-    } catch (error) {
-      setAppError(appVerifyError(error));
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleConfirmPhoneUser: SubmitHandler<ConfirmPhoneUserFormData> =
+    async (values, event) => {
+      setIsLoading(true);
+      event.preventDefault();
+      const { code } = values;
+      setAppError({});
+      try {
+        await confirmPhoneUserInsides(code);
+        await Router.push('/');
+      } catch (error) {
+        setAppError(appErrorVerifyError(error));
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   const { errors } = formState;
-
+  const { errors: errorsConfirmation } = formStateConfirm;
   return (
     <Box>
       <Flex
@@ -124,9 +130,11 @@ export default function CreatePhoneUser() {
           borderRadius={8}
           backgroundColor="gray.800"
           padding={['6', '8']}
-          onSubmit={handleSubmit(
-            phoneConfirmation ? handleConfirmPhoneUser : handleCreatePhoneUser
-          )}
+          onSubmit={
+            phoneConfirmation
+              ? handleSubmitConfirm(handleConfirmPhoneUser)
+              : handleSubmit(handleCreatePhoneUser)
+          }
         >
           <Heading size="lg" fontWeight="normal">
             {phoneConfirmation ? 'Confirmar celular' : 'Vincular celular'}
@@ -150,8 +158,8 @@ export default function CreatePhoneUser() {
                   name="code"
                   type="code"
                   label="Código:"
-                  {...register('code')}
-                  error={errors.code}
+                  {...registerConfirm('code')}
+                  error={errorsConfirmation.code}
                   max={4}
                   isDisabled={!phoneConfirmation}
                 />

@@ -5,7 +5,7 @@ export const test: interface_config = {
     name: 'Cherry-go',
   },
   backend: {
-    base_url: 'http://localhost:3333',
+    base_url: process.env.BACKEND_BASE_URL || 'http://localhost:3333',
   },
   password: {
     time_token_expires: 30,

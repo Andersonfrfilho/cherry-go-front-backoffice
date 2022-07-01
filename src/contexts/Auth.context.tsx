@@ -53,7 +53,9 @@ export type User = {
   roles: string[];
   permissions: string[];
   types: Types[];
+  cpf: string;
   documents: User_Document[];
+  created_at?: string;
 };
 
 type SignInCredentials = {
@@ -91,6 +93,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     types: [],
     roles: [],
     permissions: [],
+    documents: [],
+    id: '0fd47fc8-d595-47c7-a177-5f057157ba68',
+    cpf: '',
   });
   const isAuthenticated = !!user;
   useEffect(() => {
@@ -114,7 +119,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then(response => {
-          const { email, types, name, last_name, image_profile } =
+          const { email, types, name, last_name, image_profile, id, cpf } =
             response.data;
           const data = types
             .map(type => ({
@@ -138,6 +143,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
             permissions: data.permissions,
             roles: data.roles,
             types: data.types,
+            documents: data.documents,
+            id,
+            cpf,
           });
         })
         .catch(() => {
@@ -187,6 +195,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         permissions: data.permissions,
         roles: data.roles,
         types: data.types,
+        documents: data.documents,
+        id: '',
+        cpf: '',
       });
 
       api.defaults.headers.Authorization = `Bearer ${token}`;

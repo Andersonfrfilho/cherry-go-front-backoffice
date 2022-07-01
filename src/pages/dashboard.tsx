@@ -2,14 +2,12 @@ import { Box, Flex, SimpleGrid, Text, theme } from '@chakra-ui/react';
 import { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
 import { parseCookies } from 'nookies';
-import { useContext, useEffect } from 'react';
-import { Can } from '../components/Can';
+import { useEffect } from 'react';
 import { Header } from '../components/Header';
 import { Sidebar } from '../components/Sidebar';
-import { useAuth } from '../contexts/Auth.context';
-import { setupAPIClient } from '../services/api';
+// import { useAuth } from '../contexts/Auth.context';
+// import { setupAPIClient } from '../services/api';
 import { api } from '../services/apiClient';
-import { useCan } from '../services/hooks/useCan';
 import { withSSRAuth } from '../utils/withSSRAuth';
 
 const Chart = dynamic(() => import('react-apexcharts'), {
@@ -52,19 +50,13 @@ const options: ApexOptions = {
 const series = [{ name: 'series1', data: [57, 36, 13, 29, 6, 19] }];
 
 export default function Dashboard() {
-  const { user, isAuthenticated, signOut } = useAuth();
-
+  // const { user, isAuthenticated, signOut } = useAuth();
   useEffect(() => {
     const { 'nextauth.token': token } = parseCookies();
 
-    api
-      .get('/v1/users/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then(response => console.log(response))
-      .catch(err => {
-        console.log(err);
-      });
+    api.get('/v1/users/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
   }, []);
 
   return (
@@ -104,9 +96,10 @@ export default function Dashboard() {
   );
 }
 
-export const getServerSideProps = withSSRAuth(async ctx => {
-  const apiClient = setupAPIClient(ctx);
-  const { 'nextauth.token': token } = parseCookies(ctx);
+export const getServerSideProps = withSSRAuth(async () => {
+  // async (ctx) => {
+  // const apiClient = setupAPIClient(ctx);
+  // const { 'nextauth.token': token } = parseCookies(ctx);
   // const response = await apiClient.get('/me');
 
   // console.log(response.data);

@@ -153,7 +153,8 @@ export default function SignIn() {
   );
 }
 
-export const getServerSideProps = withSSRGuest(async ctx => {
+export const getServerSideProps = withSSRGuest(async () => {
+  // async ctx =>{
   return {
     props: {},
   };

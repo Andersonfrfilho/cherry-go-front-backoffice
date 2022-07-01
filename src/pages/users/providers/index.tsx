@@ -24,13 +24,13 @@ import {
   Thead,
   Tr,
   useBreakpointValue,
+  Image,
 } from '@chakra-ui/react';
 import { AiFillCheckCircle, AiFillWarning } from 'react-icons/ai';
 import { RiAddLine } from 'react-icons/ri';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
 import { GetServerSideProps } from 'next';
-import { Image } from '@chakra-ui/react';
 import { Header } from '../../../components/Header';
 import { Pagination } from '../../../components/Pagination';
 import { Sidebar } from '../../../components/Sidebar';
@@ -70,8 +70,7 @@ export default function UserProviderList({
   const [formattedListProviders, setFormattedListProviders] = useState<
     UserListFormatted[]
   >([] as UserListFormatted[]);
-  const [formattedListProvidersDefault, setFormattedListProvidersDefault] =
-    useState<UserListFormatted[]>([] as UserListFormatted[]);
+
   const [allListProvidersSelect, setAllListProvidersSelect] =
     useState<boolean>(false);
   const [oneProvidersSelect, setOneProvidersSelect] = useState<boolean>(false);
@@ -81,7 +80,7 @@ export default function UserProviderList({
     [] as User_Document[],
   );
   const [indexModalImage, setIndexModalImage] = useState(0);
-  const { data, isLoading, isFetching, error } = useUsers(pageProps, {
+  const { isLoading, isFetching, error } = useUsers(pageProps, {
     initialData: users,
   });
   const { activeUserProviders } = useUsersInsides();
@@ -150,7 +149,6 @@ export default function UserProviderList({
     }));
 
     setFormattedListProviders(newListUsers);
-    setFormattedListProvidersDefault(newListUsers);
   };
 
   const handleChangeActiveAllUser = async () => {
@@ -176,7 +174,6 @@ export default function UserProviderList({
     }));
 
     setFormattedListProviders(newListUsers);
-    setFormattedListProvidersDefault(newListUsers);
   };
 
   useEffect(() => {
@@ -186,7 +183,6 @@ export default function UserProviderList({
     }));
 
     setFormattedListProviders(newListUsers);
-    setFormattedListProvidersDefault(newListUsers);
   }, []);
 
   useEffect(() => {

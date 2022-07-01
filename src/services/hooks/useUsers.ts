@@ -48,19 +48,19 @@ export async function getUsersProviders({
 
 export function useUsers(
   {
-    per_page = '10',
-    page = '1',
-    order = { property: 'name', ordering: 'DESC' },
+    limit = 10,
+    skip = 0,
+    order = `created_at-`,
     fields = undefined,
   }: PaginationPropsDTO,
   options: UseQueryOptions,
 ) {
   return useQuery(
-    ['users', page],
+    ['users', skip],
     () =>
       getUsersProviders({
-        per_page,
-        page,
+        limit,
+        skip,
         order,
         fields,
       }),

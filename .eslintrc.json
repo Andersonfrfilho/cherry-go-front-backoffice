@@ -34,6 +34,8 @@
     "testing-library"
   ],
   "rules": {
+    "react-hooks/exhaustive-deps": "off",
+    "func-names": "off",
     "no-useless-return": "off",
     "react/style-prop-object": "off",
     "no-var-requires": "off",
@@ -49,6 +51,8 @@
     "prettier/prettier": "error",
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"],
     "jsx-a11y/anchor-is-valid": [
       "error",
       {
@@ -67,7 +71,7 @@
     ],
     "react/jsx-one-expression-per-line": "off",
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
+    // "react-hooks/exhaustive-deps": "warn",
     "react/require-default-props": "off",
     "react/jsx-filename-extension": [
       1,

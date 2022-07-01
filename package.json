@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "analyze": "cross-env ANALYZE=true yarn build",
-    "export": "npm run build && next export -o _static"
+    "analyze": "cross-env ANALYZE=true yarn build"
   },
   "dependencies": {
     "@chakra-ui/core": "^0.8.0",

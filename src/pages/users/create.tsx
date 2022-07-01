@@ -55,7 +55,7 @@ export default function CreateUser() {
       onSuccess: () => {
         queryClient.invalidateQueries('users');
       },
-    }
+    },
   );
   const { register, handleSubmit, formState } = useForm({
     resolver: yupResolver(createUserFormSchema),

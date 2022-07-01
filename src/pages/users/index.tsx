@@ -21,24 +21,24 @@ import NextLink from 'next/link';
 import { useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { Header } from '../../components/Header';
-import { Pagination, PaginationProps } from '../../components/Pagination';
+import { Pagination } from '../../components/Pagination';
 import { Sidebar } from '../../components/Sidebar';
 import {
-  getUsers,
+  getUsersProviders,
   PaginationPropsDTO,
   useUsers,
 } from '../../services/hooks/useUsers';
 import { queryClient } from '../../services/queryClient';
 import { api } from '../../services/apiClient';
 
-export default function UserList({ users, total }) {
+export default function UserList({ users, total, current_page, pages_total }) {
   const [pageProps, setPageProps] = useState<PaginationPropsDTO>({
-    per_page: '10',
-    page: '1',
-    order: { property: 'name', ordering: 'DESC' },
+    limit: 10,
+    skip: 0,
+    order: 'created_at-',
     fields: undefined,
   });
-  const { data, isLoading, isFetching, error } = useUsers(pageProps, {
+  const { isLoading, isFetching, error } = useUsers(pageProps, {
     initialData: users,
   });
 
@@ -158,10 +158,11 @@ export default function UserList({ users, total }) {
                 </Tbody>
               </Table>
               <Pagination
-                totalCountOfRegisters={total}
-                currentPage={Number(pageProps.page)}
+                total={total}
+                currentPage={Number(current_page)}
                 pageProps={pageProps}
                 onPageChange={setPageProps}
+                lastPage={Number(pages_total)}
               />
             </>
           )}
@@ -172,8 +173,10 @@ export default function UserList({ users, total }) {
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const { users, total } = await getUsers({});
+  const { users, total, current_page, pages_total } = await getUsersProviders(
+    {},
+  );
   return {
-    props: { users, total },
+    props: { users, total, current_page, pages_total },
   };
 };

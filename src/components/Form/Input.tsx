@@ -40,7 +40,7 @@ const InputBase: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
     buttonProps,
     ...rest
   },
-  ref
+  ref,
 ) => {
   return (
     <FormControl isInvalid={!!error}>

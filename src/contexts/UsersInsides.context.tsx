@@ -1,4 +1,3 @@
-import { Router } from 'next/router';
 import { createContext, ReactNode, useContext, useState } from 'react';
 import {
   Dispatch,
@@ -8,7 +7,7 @@ import { AppError } from '../errors/AppError';
 import { api } from '../services/apiClient';
 import { PaginationPropsDTO } from '../services/hooks/useUsers';
 import { formattedDate, removeCharacterSpecial } from '../utils/validate';
-import { User as UserAuth } from '../../../contexts/Auth.context';
+import { User as UserAuth } from './Auth.context';
 
 type CreateUserInsidesServiceDTO = {
   name: string;
@@ -83,7 +82,7 @@ type UsersInsidesContextData = {
   createPhoneUserInsides: (data: CreatePhoneDTO) => Promise<void>;
   activeUserProviders: (
     data: ActiveUserProviderWithPaginationDTO,
-  ) => Promise<User[]>;
+  ) => Promise<UserAuth[]>;
   createAddressUserInsides: (
     data: CreateAddressesUserInsidesServiceDTO,
   ) => Promise<void>;

@@ -38,7 +38,7 @@ export default function SignIn(props) {
   async function handleSentEmailConfirmation(
     values,
     event,
-    { token_param, error_code }
+    { token_param, error_code },
   ) {
     setIsLoading(true);
     event.preventDefault();
@@ -72,7 +72,7 @@ export default function SignIn(props) {
       appErrorVerifyError({
         status_code: props.appError.status_code,
         code: props.appError.code,
-      })
+      }),
     );
   }, []);
   const { errors } = formState;
@@ -101,7 +101,7 @@ export default function SignIn(props) {
             handleSentEmailConfirmation(values, event, {
               error_code: appError.code,
               token_param: token,
-            })
+            }),
           )}
         >
           <Stack spacing="4" marginBottom="2">

@@ -34,7 +34,7 @@ export function PaginationItem({
       width="4"
       backgroundColor="gray.700"
       _hover={{ backgroundColor: 'gray.500' }}
-      onClick={() => onPageChange({ ...pageProps, page: String(number) })}
+      onClick={() => onPageChange({ ...pageProps, skip: number })}
     >
       {number}
     </Button>

@@ -1,5 +1,4 @@
-import decode from 'jwt-decode';
-import { setupAPIClient } from '../services/api';
+// import { setupAPIClient } from '../services/api';
 import { withSSRAuth } from '../utils/withSSRAuth';
 
 export function Metrics() {
@@ -11,10 +10,9 @@ export function Metrics() {
 }
 
 export const getServerSideProps = withSSRAuth(
-  async ctx => {
-    const apiClient = setupAPIClient(ctx);
-    console.log('##########token - pages');
-    const response = await apiClient.get('/v1/users/me');
+  async () => {
+    // const apiClient = setupAPIClient(ctx);
+    // const response = await apiClient.get('/v1/users/me');
 
     return {
       props: {},
@@ -23,5 +21,5 @@ export const getServerSideProps = withSSRAuth(
   {
     permissions: ['metrics.list'],
     roles: ['administrador'],
-  }
+  },
 );

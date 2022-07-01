@@ -13,7 +13,7 @@ interface ProfileProps {
 
 export function Profile({ showProfileData = true, user }: ProfileProps) {
   const [viewLogout, setViewLogout] = useState<boolean>(false);
-  const { appError, setAppError, isLoading, setIsLoading } = useCommons();
+  const { setAppError, isLoading, setIsLoading } = useCommons();
   const { signOut } = useAuth();
   async function handleLogout() {
     setIsLoading(true);
@@ -41,7 +41,7 @@ export function Profile({ showProfileData = true, user }: ProfileProps) {
         {showProfileData && (
           <Box>
             <Text>{`${capitalize(user.name)} ${capitalize(
-              user.last_name
+              user.last_name,
             )}`}</Text>
             <Text color="gray.300" fontSize="small">
               {capitalize(user.email)}

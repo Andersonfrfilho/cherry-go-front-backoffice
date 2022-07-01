@@ -51,7 +51,7 @@ export default function CreateUser() {
 
   const handleForgotPasswordUser: SubmitHandler<CreateUserFormData> = async (
     values,
-    event
+    event,
   ) => {
     event.preventDefault();
     setIsLoading(true);
